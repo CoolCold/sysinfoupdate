@@ -1,4 +1,4 @@
-#!/bin/bash -v
+#!/bin/bash
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
@@ -91,7 +91,6 @@ function hardware-update () {
     ${LSPCI} -v >> ${FILEPCI}
     echo "lspci -vv" >> ${FILEPCI}
     ${LSPCI} -vv >> ${FILEPCI}
-    echo "lspci -x" >> ${FILEPCI}
     ${LSPCI} -x > ${FILEPCI}-x
     
     > ${FILEALSA}
