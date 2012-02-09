@@ -64,6 +64,7 @@ function kernel-update () {
     cat-file /proc/lvm/global ${FILEKERNEL}
     echo "OpenAFS client" >> ${FILEKERNEL}
     rxdebug localhost 7001 -version >> ${FILEKERNEL}
+    cmdebug localhost -cache >> ${FILEKERNEL}
 }
 
 function hardware-update () {
