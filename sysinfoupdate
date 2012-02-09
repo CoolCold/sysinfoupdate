@@ -20,7 +20,6 @@ function cat-file () {
 function packages-list-update () {
     FILE="${DIARIO}/packages-list"
 
-
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	COLUMNS=132 dpkg --list > "${FILE}"
