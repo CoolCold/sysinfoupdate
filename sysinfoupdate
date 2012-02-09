@@ -121,6 +121,7 @@ function partition-update () {
 }
 
 function lvm-update () {
+    DMSETUP=/sbin/dmsetup
     VGDISPLAY=/sbin/vgdisplay
     LVDISPLAY=/sbin/lvdisplay
     PVDISPLAY=/sbin/pvdisplay
@@ -128,6 +129,13 @@ function lvm-update () {
     > ${FILELVM}
 
     echo -n "."
+    if [ -x ${DMSETUP} ] ; then
+	echo_execute ${FILELVM} ${DMSETUP} targets
+	echo_execute ${FILELVM} ${DMSETUP} ls
+	echo_execute ${FILELVM} ${DMSETUP} info
+	echo_execute ${FILELVM} ${DMSETUP} deps
+	echo_execute ${FILELVM} ${DMSETUP} table
+    fi
     if [ -x ${VGDISPLAY} ] ; then
 	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
     fi
