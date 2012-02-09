@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-05-18 20:16:30 +0100 (Qua, 18 Mai 2011) $
+# $Date: 2011-05-18 20:59:35 +0100 (Qua, 18 Mai 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4964 $
+# $Revision: 4966 $
 
 
 
@@ -135,7 +135,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4964 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4966 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -405,8 +405,6 @@ function hardware-update () {
     FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
-#     HPADUCLI=/usr/sbin/hpaducli
-#     HPASMCLI=/sbin/hpasmcli
 #     PRTCONF=/usr/sbin/prtconf
 #     EEPROM=/usr/sbin/eeprom
 
@@ -584,13 +582,6 @@ function hardware-update () {
        fi
     done
 
-    if [ -x ${HPADUCLI} ] ; then
-	${HPADUCLI} -f ${DIARIO}/hpadu-report
-    fi
-    if [ -x ${HPASMCLI} ] ;then
-	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
-    fi
-
     if [ -x $PRTCONF ] ; then
 	echo_execute ${FILEHARDWARE} $PRTCONF ""
 	echo                        >> ${FILEHARDWARE}
@@ -659,6 +650,18 @@ function hdparm-update () {
 	fi
     done
     #set +x
+}
+
+function hp-hardware-update () {
+#     HPADUCLI=/usr/sbin/hpaducli
+#     HPASMCLI=/sbin/hpasmcli
+
+    if [ -x ${HPADUCLI} ] ; then
+	${HPADUCLI} -f ${DIARIO}/hpadu-report
+    fi
+    if [ -x ${HPASMCLI} ] ;then
+	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+    fi
 }
 
 function hwinfo-update () {
@@ -1172,6 +1175,10 @@ function update-slow-diario () {
     hdparm-update
     echo
     echo -n "hdparm-update " 
+    date
+    hp-hardware-update
+    echo
+    echo -n "hp-hardware-update " 
     date
     video-update
     echo
