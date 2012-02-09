@@ -70,7 +70,10 @@ function kernel-update () {
     ${LSMOD}             >> ${FILEKERNEL}
     echo                 >> ${FILEKERNEL}
     cat-file /proc/fb       ${FILEKERNEL}
+    cat-file /proc/locks    ${FILEKERNEL}
     cat-file /proc/lvm/global ${FILEKERNEL}
+    cat-file /proc/swaps    ${FILEKERNEL}
+    cat-file /proc/filesystems ${FILEKERNEL}
     echo "OpenAFS client" >> ${FILEKERNEL}
     rxdebug localhost 7001 -version >> ${FILEKERNEL}
     cmdebug localhost -cache >> ${FILEKERNEL}
@@ -104,6 +107,7 @@ function hardware-update () {
     cat-file /proc/asound/devices ${FILEALSA}
     cat-file /proc/asound/modules ${FILEALSA}
     cat-file /proc/asound/pcm     ${FILEALSA}
+    cat-file /proc/asound/timers  ${FILEALSA}
 
     > ${FILEHARDWARE}
     cat-file /proc/cpuinfo                ${FILEHARDWARE}
