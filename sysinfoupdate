@@ -229,7 +229,7 @@ function kernel-update () {
     cat-file /proc/sys/vm/nr_overcommit_hugepages  ${FILEKERNEL}
     cat-file /proc/sys/vm/stat_interval            ${FILEKERNEL}
     cat-file /proc/sys/vm/mmap_min_addr            ${FILEKERNEL}
-
+    cat-file /proc/sys/vm/highmem_is_dirtyable     ${FILEKERNEL}
     echo "OpenAFS client"               >> ${FILEKERNEL}
     if [ -x ${AFSD1} ] ; then
 	strings ${AFSD1} | grep built   >> ${FILEKERNEL}
@@ -587,8 +587,11 @@ function ipmi-update () {
     echo -n "."
 }
 
+function hpacucli-update-8.0 () {
+    hpacucli-update-generic
+}
 
-function hpacucli-update () {
+function hpacucli-update-7.85 () {
     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
     TMPDIR=`${MKTEMPDIR}`
@@ -663,7 +666,7 @@ function hpacucli-update () {
     done
 }
 
-function hpacucli-update-7.6 () {
+function hpacucli-update-generic () {
     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
     TMPDIR=`${MKTEMPDIR}`
@@ -678,17 +681,9 @@ function hpacucli-update-7.6 () {
     V1=`echo $V | cut -d . -f 1`
     V2=`echo $V | cut -d . -f 2`
     V3=`echo $V | cut -d . -f 3`
-    if [ $V1 -lt 7 ] ; then
-	hpacucli-update
-	return
-    fi
-
-    if [ $V2 -lt 60 ] ; then
-	hpacucli-update
-	return
-    fi
 
     > ${FILEHPACUCLI}
+    echo "upacucli version detected $V => $V1 $V2 $V3" >> ${FILEHPACUCLI}
     echo "Controllers" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
 
@@ -702,6 +697,51 @@ function hpacucli-update-7.6 () {
     ${HPACUCLI} controller all show config detail >> ${FILEHPACUCLI} 
     
     rm -rf ${TMPDIR}
+}
+
+
+function hpacucli-update () {
+    HPACUCLI=/usr/sbin/hpacucli
+    FILEHPACUCLI=${DIARIO}/hpacucli-report
+    TMPDIR=`${MKTEMPDIR}`
+
+    echo -n "."
+    if [ ! -x ${HPACUCLI} ] ; then
+	return
+    fi
+    
+    VERSION=`echo "exit" | ${HPACUCLI} | grep CLI | cut -d ' ' -f 6`
+    V=`echo $VERSION | cut -d - -f 1`
+    V1=`echo $V | cut -d . -f 1`
+    V2=`echo $V | cut -d . -f 2`
+    V3=`echo $V | cut -d . -f 3`
+
+    if [ $V1 -gt 8 ] ; then
+	hpacucli-update-generic
+	return
+    fi
+
+    if [ $V1 -eq 8 ] ; then
+	hpacucli-update-8.0
+	return
+    fi
+
+    if [ $V1 -eq 7 -a $V1 -gt 84 ] ; then
+	hpacucli-update-7.85
+	return
+    fi
+
+    if [ $V1 -lt 7 ] ; then
+	hpacucli-update-generic
+	return
+    fi
+
+    if [ $V2 -lt 60 ] ; then
+	hpacucli-update-generic
+	return
+    fi
+
+    hpacucli-update-generic
 }
 
 
@@ -891,7 +931,7 @@ if [ -d ${DIARIO} ] ; then
     hardware-update
     video-update
     ipmi-update
-    hpacucli-update-7.6
+    hpacucli-update
     twcli-update
     net-update
     services-update
