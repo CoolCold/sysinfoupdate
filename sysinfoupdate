@@ -141,6 +141,12 @@ function kernel-update () {
     cat-file /proc/cmdline     ${FILEKERNEL}
     cat-file /proc/crypto      ${FILEKERNEL}
     cat-file /proc/devices     ${FILEKERNEL}
+
+    printf "%20s   %s\n" "Modules" "Used by"		 >> ${FILEKERNEL}
+    if [ -r /proc/modules ] ; then
+	cat /proc/modules | awk '{ printf "%20s   %s\n",$1,$4 }' >> ${FILEKERNEL}
+    fi
+    echo 			>> ${FILEKERNEL}
     if [ -x ${LSMOD} ] ; then
 	${LSMOD}             >>    ${FILEKERNEL}
     fi
@@ -314,12 +320,14 @@ function hardware-update () {
 
     pushd /sys/devices/system/cpu > /dev/null
     for cpu in cpu* ; do
-	pushd ${cpu}/cpufreq > /dev/null
-	for file in * ; do
-	    if [ -f "${file}" ] ; then
-		cat-file /sys/devices/system/cpu/${cpu}/cpufreq/${file}		${FILEHARDWARE}
-	    fi
-	done
+	if [ -d ${cpu}/cpufreq ] ; then
+	    pushd ${cpu}/cpufreq > /dev/null
+	    for file in * ; do
+		if [ -f "${file}" ] ; then
+		    cat-file /sys/devices/system/cpu/${cpu}/cpufreq/${file}		${FILEHARDWARE}
+		fi
+	    done
+	fi
     done
 
     > ${FILEHDPARM}
@@ -462,6 +470,8 @@ function net-update () {
     
     echo -n "."
     > ${FILENET}
+    echo "ifconfig cleaned"			>> ${FILENET}
+    ${IFCONFIG} | grep -v TX | grep -v RX	>> ${FILENET}
     echo "ifconfig"        >> ${FILENET}
     ${IFCONFIG}            >> ${FILENET}
     # Get routing tables
@@ -470,6 +480,13 @@ function net-update () {
     else
 	echo "route"           >> ${FILENET}
 	${ROUTE}               >> ${FILENET}
+	echo "route -A inet6 cleaned"  >> ${FILENET}
+	printf "%30s %30s %8s %8s %4s %4s %10s\n" "Destination" \
+	    "Next Hop" "Flags" "Metric" "Ref" "Use" "Iface" \
+	    >> ${FILENET}
+	${ROUTE} -A inet6 \
+	    | awk '{printf "%30s %30s %8s %8s XXXX XXXX %10s\n",$1,$2,$3,$4,$7}' \
+	    >> ${FILENET}
 	echo "route -A inet6"  >> ${FILENET}
 	${ROUTE} -A inet6      >> ${FILENET}
     fi
@@ -482,6 +499,10 @@ function net-update () {
 	${IP} addr             >> ${FILENET}
 	echo "ip addr"         >> ${FILENET}
 	${IP} route            >> ${FILENET}
+	echo "ip -6 route cleaned up"     >> ${FILENET}
+	${IP} -6 route \
+	    | awk '{ print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " XXXX " $8 " " $9 " " $10 " " $11 " " $12 " " $13 }' \
+	    >> ${FILENET}
 	echo "ip -6 route"     >> ${FILENET}
 	${IP} -6 route         >> ${FILENET}
 	echo "ip tunnel"       >> ${FILENET}
