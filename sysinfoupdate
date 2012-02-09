@@ -98,7 +98,7 @@ function partition-update () {
     echo -n "."
     > ${FILEPART}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
-	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
+	${FDISK} -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
     echo -n "."
     ${PARTED} -l >> ${FILEPART} 
