@@ -421,6 +421,10 @@ function hardware-update () {
 function ipmi-update () {
     FILEIPMI=${DIARIO}/ipmi-report
 
+    if test ! -e /dev/ipmi0 ; then
+	return
+    fi
+
     > ${FILEIPMI}
     
     echo_execute ${FILEIPMI} ipmitool "chassis status"
