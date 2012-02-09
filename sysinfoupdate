@@ -104,6 +104,7 @@ function hardware-update () {
     cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
     echo                               >> ${FILEHARDWARE}
     cat-file /proc/bus/input/devices      ${FILEHARDWARE}
+    cat-file /proc/bus/ieee1394/devices   ${FILEHARDWARE}
     cat-file /proc/bus/usb/devices        ${FILEHARDWARE}
     cat-file /proc/bus/usb/drivers        ${FILEHARDWARE}
     cat-file /proc/ide/drivers            ${FILEHARDWARE}
@@ -112,6 +113,7 @@ function hardware-update () {
     cat-file /proc/ide/svwks              ${FILEHARDWARE}
     cat-file /proc/scsi/scsi              ${FILEHARDWARE}
     cat-file /proc/driver/cciss/cciss0    ${FILEHARDWARE}
+    cat-file /proc/scsi/3w-xxxx/0         ${FILEHARDWARE}
     cat-file /proc/dri/0/name             ${FILEHARDWARE}
     cat-file /proc/dri/0/mem              ${FILEHARDWARE}
     
