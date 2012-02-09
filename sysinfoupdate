@@ -387,7 +387,8 @@ function hardware-update () {
 
     cat-file /proc/acpi/alarm			${FILEHARDWARE}
     cat-file /proc/acpi/info			${FILEHARDWARE}
-    cat-file /proc/acpi/event			${FILEHARDWARE}
+#   Not a usefull sourve for information
+#    cat-file /proc/acpi/event			${FILEHARDWARE}
     cat-file /proc/acpi/sleep			${FILEHARDWARE}
     cat-file /proc/acpi/wakeup			${FILEHARDWARE}
     cat-file /proc/acpi/button/power/PWRB/info	${FILEHARDWARE}
