@@ -586,19 +586,19 @@ function twcli-update () {
     ${TWCLI} show                                   >> ${FILETWCLI}
     echo "tw_cli show alarms"                       >> ${FILETWCLI}
     ${TWCLI} show alarms                            >> ${FILETWCLI}
-    echo "tw_cli show diag"                         >> ${FILETWCLI}
-    ${TWCLI} show diag                              >> ${FILETWCLI}
     echo "tw_cli show rebuild"                      >> ${FILETWCLI}
     ${TWCLI} show rebuild                           >> ${FILETWCLI}
     echo "tw_cli show verify"                       >> ${FILETWCLI}
     ${TWCLI} show verify                            >> ${FILETWCLI}
     echo "tw_cli show selftest"                     >> ${FILETWCLI}
     ${TWCLI} show selftest                          >> ${FILETWCLI}
-
     for ctrl in `tw_cli show | egrep "^c[0-9] " | cut -f 1 -d ' '` ; do
 	echo "tw_cli /$ctrl show all"               >> ${FILETWCLI}
 	${TWCLI} /$ctrl show all                    >> ${FILETWCLI}
     done
+
+    echo "tw_cli show diag"                         >> ${FILETWCLI}
+    ${TWCLI} show diag                              >> ${FILETWCLI}
     echo -n "."
 }
 
