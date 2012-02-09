@@ -16,11 +16,15 @@ function set-command () {
     CMD=`eval "$WHICH $2"`
     #echo "$CMD"
     if test ! -x "$CMD" ; then
-	echo "$2 not found"
+	echo -n "$2 not found. "
+	CMD=$2
 	if test $# -gt 2; then
+	    echo "$3"
+	fi
+	echo
+	if test $# -gt 3; then
+	    echo "Aborting"
 	    exit 1
-	else
-	    CMD=$2
 	fi
     fi
 
@@ -40,7 +44,7 @@ set-command CAT cat
 set-command RPM rpm
 set-command FDISK fdisk
 set-command PARTED parted
-set-command GDISK gdisk
+set-command GDISK gdisk "Temporarely on sid"
 set-command CP cp
 set-command DF df
 set-command DMSETUP dmsetup
@@ -57,17 +61,17 @@ set-command CUT cut
 set-command LSUSB lsusb
 set-command HDPARM hdparm
 set-command SDPARM sdparm
-set-command HPADUCLI hpaducli
-set-command HPASMCLI hpasmcli
-set-command HPACUCLI hpacucli
-set-command PRTCONF prtconf
-set-command EEPROM eeprom
+set-command HPADUCLI hpaducli "For SCSI from HP/Compaq"
+set-command HPACUCLI hpacucli "For SCSI from HP/Compaq"
+set-command HPASMCLI hpasmcli "For Hardware from HP/Compaq"
+set-command PRTCONF prtconf "For SPARC Machines"
+set-command EEPROM eeprom "For SPARC Machines"
 set-command HWINFO hwinfo
 set-command DDCPROBE ddcprobe
 set-command GETEDID get-edid
 set-command PARSEEDID parse-edid
 set-command IPMITOOL ipmitool
-set-command TWCLI tw_cli
+set-command TWCLI tw_cli "For 3ware/LSI Controlers"
 set-command IFCONFIG ifconfig
 set-command ROUTE route
 set-command IP ip
