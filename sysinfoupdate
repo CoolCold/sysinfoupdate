@@ -55,13 +55,22 @@ function partition-update () {
 
 function lvm-update () {
     VGDISPLAY=/sbin/vgdisplay
+    LVDISPLAY=/sbin/lvdisplay
+    PVDISPLAY=/sbin/pvdisplay
     FILELVM=${DIARIO}/lvm-list
     > ${FILELVM}
 
     echo -n "."
     if [ -x ${VGDISPLAY} ] ; then
 	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
+    fi
+    if [ ! -x ${LVDISPLAY} -o ! -x ${PVDISPLAY} ] ; then
+	echo "$LVDISPLAY or $PVDISPLAY not available"
 	${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
+    else
+	${VGDISPLAY} -A >> ${FILELVM} 2>&1
+	${LVDISPLAY} -v -m >> ${FILELVM} 2>&1
+	${PVDISPLAY} -v -m >> ${FILELVM} 2>&1
     fi
 }
 
