@@ -299,10 +299,12 @@ function hardware-update () {
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
+    FILEHWINFO=${DIARIO}/hwinfo-list
     HPADUCLI=/usr/sbin/hpaducli
     HPASMCLI=/sbin/hpasmcli
     PRTCONF=/usr/sbin/prtconf
     EEPROM=/usr/sbin/eeprom
+    HWINFO=/usr/sbin/hwinfo
 
     echo -n "."
     > ${FILEPCI}
@@ -500,6 +502,9 @@ function hardware-update () {
     if [ -x $EEPROM ] ; then
 	echo_execute ${FILEHARDWARE} $EEPROM ""
     fi
+
+    echo_execute ${FILEHWINFO}  ${HWINFO} "--short"
+    echo_execute ${FILEHWINFO}  ${HWINFO} ""
 }
 
 
