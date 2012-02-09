@@ -361,6 +361,15 @@ function hardware-update () {
     cat-file /proc/ide/ide1/channel           ${FILEHARDWARE}
     cat-file /proc/ide/ide1/mate              ${FILEHARDWARE}
     cat-file /proc/ide/ide1/model             ${FILEHARDWARE}
+    for ide in /proc/ide/hda /proc/ide/hdb /proc/ide/hdc /proc/ide/hdd ; do
+	if [ -d "${ide}" ] ; then
+	    for file in "${ide}"/* ; do
+		if [ -f "${file}" ] ; then
+		    cat-file "${file}"        ${FILEHARDWARE}
+		fi
+	    done
+	fi
+    done
     cat-file /proc/scsi/scsi                  ${FILEHARDWARE}
     cat-file /proc/scsi/sg/version            ${FILEHARDWARE}
     cat-file /proc/scsi/sg/devices            ${FILEHARDWARE}
@@ -387,6 +396,7 @@ function hardware-update () {
     cat-file /proc/pmu/options                ${FILEHARDWARE}
 
     cat-file /proc/acpi/alarm			${FILEHARDWARE}
+    cat-file /proc/acpi/fan/FAN/state           ${FILEHARDWARE}
     cat-file /proc/acpi/info			${FILEHARDWARE}
 #   Not a usefull sourve for information
 #    cat-file /proc/acpi/event			${FILEHARDWARE}
