@@ -204,15 +204,70 @@ function hardware-update () {
 function hpacucli-update () {
     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
+    TMPDIR=`mktemp -d`
 
     echo -n "."
-    ${HPACUCLI} controller all show > ${DIARIO}/hpacucli-report 
-    ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} ld all show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} pd all show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} ld all show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} pd all show  >> ${DIARIO}/hpacucli-report
+    > ${FILEHPACUCLI}
+    echo "Controllers" >> ${FILEHPACUCLI}
+    ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
+
+    echo -n "."
+    cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${FILEHPACUCLI}
+    cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${FILEHPACUCLI}
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
+	echo -n "."
+ 	echo "Discs of controller in Slot $target" >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller slot=${target} array all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-array >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller slot=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-ld >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller slot=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-pd >> ${FILEHPACUCLI}
+    done
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
+	echo -n "."
+ 	echo "Discs of controller at $target" >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} array all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-array >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-ld >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-pd >> ${FILEHPACUCLI}
+    done
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
+	echo -n "."
+ 	echo "Detail of discs in Slot $target" >> ${FILEHPACUCLI}
+	for array in `grep -h "  array " ${TMPDIR}/hpacucli-controller-slot-${target}-array | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller slot=${target} array $array show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for ld in `grep -h "  logicaldrive " ${TMPDIR}/hpacucli-controller-slot-${target}-ld | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller slot=${target} ld $ld show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for pd in `grep -h "  physicaldrive " ${TMPDIR}/hpacucli-controller-slot-${target}-pd | awk '{print $2}'` ; do
+	    #echo $pd
+	    ${HPACUCLI} controller slot=${target} pd $pd show >> ${FILEHPACUCLI}
+	done
+    done
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
+	echo -n "."
+ 	echo "Detail of discs at $target" >> ${FILEHPACUCLI}
+	for array in `grep -h array ${TMPDIR}/hpacucli-controller-at-${target}-array | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller ch=${target} array $array show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for ld in `grep -h logicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-ld | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller ch=${target} ld $ld show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for pd in `grep -h physicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-pd | awk '{print $2}'` ; do
+	    #echo $pd
+	    ${HPACUCLI} controller ch=${target} pd $pd show >> ${FILEHPACUCLI}
+	done
+    done
 }
 
 
