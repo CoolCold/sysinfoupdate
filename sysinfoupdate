@@ -334,9 +334,9 @@ function kernel-update () {
     > ${FILEPROCSYS}
     cat-file /proc/version                                  ${FILEPROCSYS}
     find /proc/ -print | grep -v "^/proc/[0-9]" | sort   >> ${FILEPROCSYS}
-    ls -lAFR --time-style=+%Y /proc/[a-zA-Z]*            >> ${FILEPROCSYS}
+    ls -lAFR --time-style=+ /proc/[a-zA-Z]*            >> ${FILEPROCSYS}
     find /sys/ -print  | grep -v "^/sys/[0-9]" | sort    >> ${FILEPROCSYS}
-    ls -lAFR --time-style=+%Y /sys/[a-zA-Z]*             >> ${FILEPROCSYS}
+    ls -lAFR --time-style=+ /sys/[a-zA-Z]*             >> ${FILEPROCSYS}
     
 }
 
