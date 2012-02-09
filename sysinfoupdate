@@ -1,50 +1,52 @@
 #!/bin/bash
 
-# Sincronized with version 871 on
-# svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate
-
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 
-# Define VARS to call commands
-if [ -x /bin/grep ] ; then
-    GREP=/bin/grep
-else 
-    if [ -x /usr/bin/grep ] ; then
-	GREP=/usr/bin/grep
-    else
-	GREP=grep
-    fi
-fi
+function packages-list-update () {
+    case $HOSTNAME in
+	picard|data|bcksrv|calhariz-mac-adm|natasha.local|portatil-calhariz-adm.tagus.ist.utl.pt|mariana|backup)
+	    FILE="${DIARIO}/packages-list"
+	    if [ -f "${FILE}" ] ; then
+		COLUMNS=132 dpkg --list > "${FILE}"
+	    else
+		echo "Nao existe o ficheiro ${FILE}"
+	    fi
+	    ;;
+	*)
+	    if [ -d "${DIARIO}" ] ; then
+		FILE="${DIARIO}/packages-list"
+		if [ -f "${FILE}" ] ; then
+		    echo "Criando ficheiro ${FILE}"
+		    COLUMNS=132 dpkg --list > "${FILE}"
+		fi
+	    fi
+	    ;;
+    esac
+}
 
-if [ -x /bin/mktemp ] ; then
-    MKTEMP="/bin/mktemp /tmp/tmp.XXXXXXXXXXXX"
-    MKTEMPDIR="/bin/mktemp -d /tmp/tmp.XXXXXXXXXXXX"
-else
-    if [ -x /usr/bin/mktemp ] ; then
-	MKTEMP="/usr/bin/mktemp /tmp/tmp.XXXXXXXXXXXXXXXX"
-	MKTEMPDIR="/usr/bin/mktemp -d /tmp/tmp.XXXXXXXXXXXXXXXX"
-    fi
-fi
+function partition-update () {
+    FDISK=/sbin/fdisk
+    CP=/bin/cp
+    FILEPART=${DIARIO}/part-list
+    FILEFSTAB=${DIARIO}/fstab
 
-if [ -x /bin/mount ] ; then
-    MOUNT=/bin/mount
-else
-    if [ -x /sbin/mount ] ; then
-	MOUNT=/sbin/mount
-    else
-	MOUNT=mount
-    fi
-fi
+    > ${FILEPART}
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
+	fdisk -l /dev/${disk} >> ${FILEPART}
+    done
+    
+    ${CP} /etc/fstab ${FILEFSTAB}
+}
 
-if [ -x /sbin/lspci ] ; then
-    LSPCI=/sbin/lspci
-else
-    if [ -x /usr/bin/lspci ] ; then
-	LSPCI=/usr/bin/lspci
-    fi
-    LSPCI=lspci
-fi
+function lvm-update () {
+    VGDISPLAY=/sbin/vgdisplay
+    FILELVM=${DIARIO}/lvm-list
+    > ${FILELVM}
+
+    ${VGDISPLAY} --short >> ${FILELVM}
+    ${VGDISPLAY} --verbose >> ${FILELVM}
+}
 
 # $1 - procfile
 # $2 - File to log
@@ -60,588 +62,68 @@ function cat-file () {
     echo >> $2
 }
 
-function packages-list-update () {
-    FILE="${DIARIO}/packages-list"
-
-    if [ -d "${DIARIO}" ] ; then
-	echo -n "."
-	> "${FILE}"
-	echo "deb packages installed" >> "${FILE}"
-	COLUMNS=256 dpkg --list | cut -f 1-3 -d ' ' >> "${FILE}"
-	COLUMNS=132 dpkg --list >> "${FILE}"
-	echo "rpm packages installed" >> "${FILE}"
-	rpm -q -a >> "${FILE}" 2>&1
-    fi
-
-}
-
-function partition-update () {
-    FDISK=/sbin/fdisk
-    CP=/bin/cp
-    DF=/bin/df
-    FILEPART=${DIARIO}/part-list
-    FILEFSTAB=${DIARIO}/fstab
-    FILEFS=${DIARIO}/fs-list
-
-    echo -n "."
-    > ${FILEPART}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
-	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
-    done
-    echo -n "."
-    > ${FILEFS}
-    echo "mounted partitions"           >> ${FILEFS}
-    case $OSTYPE in
-	linux-gnu)
-	    ${MOUNT} -l                         >> ${FILEFS}
-	    ;;
-	darwin8.0)
-	    ${MOUNT}                            >> ${FILEFS}
-	    ;;
-	*)
-	    ${MOUNT}                            >> ${FILEFS}	
-    esac
-    echo "size of filesystems df -h"    >> ${FILEFS}
-    ${DF} -h                            >> ${FILEFS}
-    echo "inodes of filesystems df -iH" >> ${FILEFS}
-    ${DF} -iH                           >> ${FILEFS}   
-    
-    ${CP} /etc/fstab ${FILEFSTAB}
-}
-
-function lvm-update () {
-    VGDISPLAY=/sbin/vgdisplay
-    LVDISPLAY=/sbin/lvdisplay
-    PVDISPLAY=/sbin/pvdisplay
-    FILELVM=${DIARIO}/lvm-list
-    > ${FILELVM}
-
-    echo -n "."
-    if [ -x ${VGDISPLAY} ] ; then
-	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
-    fi
-    if [ ! -x ${LVDISPLAY} -o ! -x ${PVDISPLAY} ] ; then
-	echo "$LVDISPLAY or $PVDISPLAY not available"
-    else
-	${VGDISPLAY} -A >> ${FILELVM} 2>&1
-	${LVDISPLAY} -v -m >> ${FILELVM} 2>&1
-	${PVDISPLAY} -v -m >> ${FILELVM} 2>&1
-    fi
-}
-
-function md-update () {
-    MDADM=/sbin/mdadm
-    FILEMD=${DIARIO}/md-list
-    > ${FILEMD}
-
-    echo -n "."
-    if [ ! -x ${MDADM} ] ; then
-	return
-    fi
-    ${MDADM} mdadm --detail /dev/md* >> ${FILEMD} 2>&1
-    cat-file /proc/mdstat      ${FILEMD}
-    cat-file /proc/sys/dev/raid/speed_limit_max ${FILEMD}
-    cat-file /proc/sys/dev/raid/speed_limit_min ${FILEMD}
-}
-
 function kernel-update () {
     FILEKERNEL=${DIARIO}/kernel-list
     CAT=/bin/cat
     LSMOD=/sbin/lsmod
-    FREE=/usr/bin/free
-    AFSD1=/usr/sbin/afsd
-    AFSD2=/sbin/afsd
 
-    echo -n "."
     >${FILEKERNEL}
-    cat-file /proc/version     ${FILEKERNEL}
-    cat-file /proc/cmdline     ${FILEKERNEL}
-    cat-file /proc/crypto      ${FILEKERNEL}
-    cat-file /proc/devices     ${FILEKERNEL}
-
-    printf "%20s   %s\n" "Modules" "Used by"		 >> ${FILEKERNEL}
-    if [ -r /proc/modules ] ; then
-	cat /proc/modules | awk '{ printf "%20s   %s\n",$1,$4 }' >> ${FILEKERNEL}
-    fi
-    echo 			>> ${FILEKERNEL}
-    if [ -x ${LSMOD} ] ; then
-	${LSMOD}             >>    ${FILEKERNEL}
-    fi
-    echo                 >>    ${FILEKERNEL}
-    cat-file /proc/fb          ${FILEKERNEL}
-    cat-file /proc/locks       ${FILEKERNEL}
-    cat-file /proc/execdomains ${FILEKERNEL}
-    echo "free"          >>    ${FILEKERNEL}
-    if [ -x ${FREE} ] ; then
-	${FREE}              >>    ${FILEKERNEL}
-    fi
-    cat-file /proc/meminfo     ${FILEKERNEL}
-    cat-file /proc/mtrr        ${FILEKERNEL}
-    cat-file /proc/lvm/global  ${FILEKERNEL}
-    cat-file /proc/swaps       ${FILEKERNEL}
-    cat-file /proc/filesystems ${FILEKERNEL}
-
-    echo "OpenAFS client"               >> ${FILEKERNEL}
-    if [ -x ${AFSD1} ] ; then
-	strings ${AFSD1} | grep built   >> ${FILEKERNEL}
-    fi
-    if [ -x ${AFSD2} ] ; then
-	strings ${AFSD2} | grep built   >> ${FILEKERNEL}
-    fi
-    echo "OpenAFS modules"              >> ${FILEKERNEL}
-    if rxdebug > /dev/null 2>&1; then
-	rxdebug localhost 7001 -version >> ${FILEKERNEL}
-    fi
-    echo "OpenAFS cache settings"       >> ${FILEKERNEL}
-    if cmdebug > /dev/null 2>&1; then
-	cmdebug localhost -cache        >> ${FILEKERNEL}
-    fi
-    echo "/proc/sys"                            >> ${FILEKERNEL}
-    cat-file /proc/sys/kernel/randomize_va_space   ${FILEKERNEL}
-    cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
-    cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
-    cat-file /proc/sys/kernel/random/poolsize      ${FILEKERNEL}
-    cat-file /proc/sys/vm/vdso_enabled             ${FILEKERNEL}
-}
-
-function kernel-boot () {
-    FILEKERNELBOOT=${DIARIO}/kernel-boot
-    DMESGLOG=/var/log/dmesg
-    KERNELLOG=/var/log/kern.log
-    DMESG=/bin/dmesg
-    HEAD=/usr/bin/head
-    CP=/bin/cp
-    CUT=/usr/bin/cut
-
-    echo -n "."
-    case $OSTYPE in
-	linux-gnu)
-	    TMPFILE=`${MKTEMP}`
-	    ${DMESG} > ${TMPFILE}
-	    if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
-		${CP} ${TMPFILE} ${FILEKERNELBOOT}
-	    else
-		if ${GREP} "Linux version" ${KERNELLOG}> /dev/null ; then
-		    LMATCH=`grep -n "Linux version" /var/log/kern.log | tail -1 | cut -d: -f 1`
-		    FSIZE=`wc -l /var/log/kern.log | cut -f 1 -d ' '`
-		    tail --lines=$(( FSIZE - LMATCH + 1)) /var/log/kern.log | cut -d : -f 4- | cut -b 2- > ${FILEKERNELBOOT}
-		else
-		    if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
-			${CP} /var/log/dmesg ${FILEKERNELBOOT}
-		    else
-			echo "Could not find initial kernel boot message, ${DMESG} ${KERNELLOG} and ${DMESGLOG} did not help."
-			echo 
-			echo "See if exist an alternative."
-			echo
-			echo "If kernel boot messages are to big to fit in /proc/kmsg ring buffer, considerar to change runlevels of sysklogd, klogd and bootmisc.sh.  Sugestion: /etc/rcS.d/S40sysklog /etc/rcS.d/S41klogd /etc/rcS.d/S41bootmisc.sh"
-		    fi
-		fi
-	    fi
-	    ;;
-	darwin8.0)
-	    DMESG > ${FILEKERNELBOOT}
-	    ;;
-	*)
-	    
-    esac
-    
-    if [ -e /var/log/boot ] ; then
-	${CUT}  -d : -f 4- /var/log/boot | ${CUT} -b2- > ${DIARIO}/boot-log 
-    fi
+    cat-file /proc/version  ${FILEKERNEL}
+    ${LSMOD} >> ${FILEKERNEL}
+    echo >> ${FILEKERNEL}
+    cat-file /proc/dma ${FILEKERNEL}
+    cat-file /proc/fb  ${FILEKERNEL}
 }
 
 function hardware-update () {
-    LSUSB=/usr/bin/lsusb
-    HDPARM=/sbin/hdparm
+    LSPCI=/usr/bin/lspci
     FILEPCI=${DIARIO}/pci-list
-    FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
-    HPADUCLI=/usr/sbin/hpaducli
-    HPASMCLI=/sbin/hpasmcli
-
-    echo -n "."
+    
     > ${FILEPCI}
-    echo "#################### lspci "      >> ${FILEPCI}
-    ${LSPCI}                                >> ${FILEPCI}
-    echo "#################### lspci -tv"   >> ${FILEPCI}
-    ${LSPCI} -tv                            >> ${FILEPCI}
-    echo "#################### lspci -v"    >> ${FILEPCI}
-    ${LSPCI} -v                             >> ${FILEPCI}
-    echo "#################### lspci -vv"   >> ${FILEPCI}
-    ${LSPCI} -vv                            >> ${FILEPCI}
-    cat-file /proc/pci                         ${FILEPCI}
-    ${LSPCI} -x                              > ${FILEPCI}-x
-    cat-file /proc/bus/pci/devices             ${FILEPCI}-x
-
-    > ${FILEUSB}
-    if [ -x ${LSUSB} ] ; then
-	${LSUSB}                            >> ${FILEUSB}
-	${LSUSB} -t                         >> ${FILEUSB} 2>&1
-	${LSUSB} -v                         >> ${FILEUSB}
-    fi
-
+    echo "lspci" >> ${FILEPCI}
+    ${LSPCI} >> ${FILEPCI}
+    echo "lspci -tv" >> ${FILEPCI}
+    ${LSPCI} -tv >> ${FILEPCI}
+    echo "lspci -v" >> ${FILEPCI}
+    ${LSPCI} -v >> ${FILEPCI}
+    echo "lspci -vv" >> ${FILEPCI}
+    ${LSPCI} -vv >> ${FILEPCI}
+    ${LSPCI} -x > ${FILEPCI}-x
+    
     > ${FILEALSA}
     cat-file /proc/asound/version ${FILEALSA}
     cat-file /proc/asound/cards   ${FILEALSA}
     cat-file /proc/asound/devices ${FILEALSA}
     cat-file /proc/asound/modules ${FILEALSA}
     cat-file /proc/asound/pcm     ${FILEALSA}
-    cat-file /proc/asound/timers  ${FILEALSA}
 
     > ${FILEHARDWARE}
-    cat-file /proc/cpuinfo                    ${FILEHARDWARE}
-    cat-file /proc/dma                        ${FILEHARDWARE}
-    cat-file /proc/interrupts                 ${FILEHARDWARE}
-    cat-file /proc/iomem                      ${FILEHARDWARE}
-    cat-file /proc/ioports                    ${FILEHARDWARE}
-    cat-file /proc/device-tree/compatible     ${FILEHARDWARE}
-    echo                                   >> ${FILEHARDWARE}
-    cat-file /proc/device-tree/model          ${FILEHARDWARE}
-    echo                                   >> ${FILEHARDWARE}
-    cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
-    echo                                   >> ${FILEHARDWARE}
-    cat-file /proc/bus/input/devices          ${FILEHARDWARE}
-    cat-file /proc/bus/input/handlers         ${FILEHARDWARE}
-    cat-file /proc/bus/ieee1394/devices       ${FILEHARDWARE}
-    cat-file /proc/bus/usb/devices            ${FILEHARDWARE}
-    cat-file /proc/bus/usb/drivers            ${FILEHARDWARE}
-    cat-file /proc/ide/drivers                ${FILEHARDWARE}
-    cat-file /proc/ide/amd74xx                ${FILEHARDWARE}
-    cat-file /proc/ide/via                    ${FILEHARDWARE}
-    cat-file /proc/ide/piix                   ${FILEHARDWARE}
-    cat-file /proc/ide/svwks                  ${FILEHARDWARE}
-    cat-file /proc/scsi/scsi                  ${FILEHARDWARE}
-    cat-file /proc/scsi/sg/version            ${FILEHARDWARE}
-    cat-file /proc/scsi/sg/devices            ${FILEHARDWARE}
-    cat-file /proc/scsi/sg/device_strs        ${FILEHARDWARE}
-    cat-file /proc/driver/cciss/cciss0        ${FILEHARDWARE}
-    cat-file /proc/driver/cciss/cciss1        ${FILEHARDWARE}
-    cat-file /proc/scsi/3w-xxxx/0             ${FILEHARDWARE}
-    cat-file /proc/pmu/info                   ${FILEHARDWARE}
-    cat-file /proc/pmu/interrupts             ${FILEHARDWARE}
-    cat-file /proc/pmu/options                ${FILEHARDWARE}
-    cat-file /proc/driver/rtc                 ${FILEHARDWARE}
-    cat-file /proc/dri/0/name                 ${FILEHARDWARE}
-    cat-file /proc/dri/0/mem                  ${FILEHARDWARE}
-    cat-file /proc/mpt/version                ${FILEHARDWARE}
-    cat-file /proc/mpt/summary                ${FILEHARDWARE}
-    cat-file /proc/mpt/ioc0/info              ${FILEHARDWARE}
-    cat-file /proc/mpt/ioc0/summary           ${FILEHARDWARE}
-
-    echo "Power management"                >> ${FILEHARDWARE}
-    cat-file /proc/apm				${FILEHARDWARE}
-    cat-file /proc/pmu/battery_0              ${FILEHARDWARE}
-    cat-file /proc/pmu/info                   ${FILEHARDWARE}
-    cat-file /proc/pmu/options                ${FILEHARDWARE}
-
-    cat-file /proc/acpi/alarm			${FILEHARDWARE}
-    cat-file /proc/acpi/info			${FILEHARDWARE}
-    cat-file /proc/acpi/button/power/PWRF/info	${FILEHARDWARE}
-    
-    if [ -d /proc/acpi/processor/CPU0 ] ; then
-       pushd /proc/acpi/processor > /dev/null 
-       for cpu in /proc/acpi/processor/CPU* ; do
-           if [ -d ${cpu} ] ; then
-               pushd ${cpu} > /dev/null
-               for file in ${cpu}/* ; do
-                   if [ -f "${file}" ] ; then
-                       cat-file "${file}"      ${FILEHARDWARE}
-                   fi
-               done
-           fi
-       done
-    fi
-
-    if [ -d /sys/devices/system/cpu ] ; then
-       for cpu in /sys/devices/system/cpu* ; do
-           if [ -d ${cpu}/cpufreq ] ; then
-               for file in ${cpu}/cpufreq/* ; do
-                   if [ -f "${file}" ] ; then
-                       cat-file "${file}"      ${FILEHARDWARE}
-                   fi
-               done
-           fi
-       done
-    fi
-
-    echo "IO Scheduler"                             >> ${FILEHARDWARE}
-    for file in /sys/block/*/queue/* ; do
-       if [ -f $file -a -r $file ] ; then
-           cat-file $file                      ${FILEHARDWARE}
-       fi
-    done
+    cat-file /proc/bus/input/devices     ${FILEHARDWARE}
+    cat-file /proc/bus/usb/devices       ${FILEHARDWARE}
+    cat-file /proc/ide/drivers           ${FILEHARDWARE}
+    cat-file /proc/ide/via         ${FILEHARDWARE}
+    cat-file /proc/ide/piix        ${FILEHARDWARE}
+    cat-file /proc/net/dev         ${FILEHARDWARE}
+    cat-file /proc/scsi/scsi       ${FILEHARDWARE}
 
     > ${FILEHDPARM}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
-	${HDPARM}    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
+	hdparm    /dev/${disk} >> ${FILEHDPARM}
+	hdparm -i /dev/${disk} >> ${FILEHDPARM}
+	hdparm -I /dev/${disk} >> ${FILEHDPARM}
     done
-
-    if [ -x ${HPADUCLI} ] ; then
-	${HPADUCLI} -f ${DIARIO}/hpadu-report
-    fi
-    if [ -x ${HPASMCLI} ] ;then
-	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
-    fi
-}
-
-function hpacucli-update () {
-    HPACUCLI=/usr/sbin/hpacucli
-    FILEHPACUCLI=${DIARIO}/hpacucli-report
-    TMPDIR=`${MKTEMPDIR}`
-
-    echo -n "."
-    if [ ! -x ${HPACUCLI} ] ; then
-	return
-    fi
-    > ${FILEHPACUCLI}
-    echo "Controllers" >> ${FILEHPACUCLI}
-    ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
-
-
-    echo -n "."
-    cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${FILEHPACUCLI}
-    cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${FILEHPACUCLI}
-	    
-
-    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
-	echo -n "."
-	echo "Discs of controller at $target" >> ${FILEHPACUCLI}
-	${HPACUCLI} controller ch=${target} array all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-array >> ${FILEHPACUCLI}
-	${HPACUCLI} controller ch=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-ld >> ${FILEHPACUCLI}
-	${HPACUCLI} controller ch=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-pd >> ${FILEHPACUCLI}
-    done
-
-    for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
-	echo -n "."
-	echo "Discs of controller in Slot $target" >> ${FILEHPACUCLI}
-	${HPACUCLI} controller slot=${target} array all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-array >> ${FILEHPACUCLI}
-	${HPACUCLI} controller slot=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-ld >> ${FILEHPACUCLI}
-	${HPACUCLI} controller slot=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-pd >> ${FILEHPACUCLI}
-    done
-
-
-    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
-	echo -n "."
- 	echo "Detail of discs at $target" >> ${FILEHPACUCLI}
-	for array in `grep -h array ${TMPDIR}/hpacucli-controller-at-${target}-array | awk '{print $2}'` ; do
-	    #echo $ld
-	    ${HPACUCLI} controller ch=${target} array $array show >> ${FILEHPACUCLI}
-	done
-	echo -n "."
-	for ld in `grep -h logicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-ld | awk '{print $2}'` ; do
-	    #echo $ld
-	    ${HPACUCLI} controller ch=${target} ld $ld show >> ${FILEHPACUCLI}
-	done
-	echo -n "."
-	for pd in `grep -h physicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-pd | awk '{print $2}'` ; do
-	    #echo $pd
-	    ${HPACUCLI} controller ch=${target} pd $pd show >> ${FILEHPACUCLI}
-	done
-    done
-
-    for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
-	echo -n "."
- 	echo "Detail of discs in Slot $target" >> ${FILEHPACUCLI}
-	for array in `grep -h "  array " ${TMPDIR}/hpacucli-controller-slot-${target}-array | awk '{print $2}'` ; do
-	    #echo $ld
-	    ${HPACUCLI} controller slot=${target} array $array show >> ${FILEHPACUCLI}
-	done
-	echo -n "."
-	for ld in `grep -h "  logicaldrive " ${TMPDIR}/hpacucli-controller-slot-${target}-ld | awk '{print $2}'` ; do
-	    #echo $ld
-	    ${HPACUCLI} controller slot=${target} ld $ld show >> ${FILEHPACUCLI}
-	done
-	echo -n "."
-	for pd in `grep -h "  physicaldrive " ${TMPDIR}/hpacucli-controller-slot-${target}-pd | awk '{print $2}'` ; do
-	    #echo $pd
-	    ${HPACUCLI} controller slot=${target} pd $pd show >> ${FILEHPACUCLI}
-	done
-    done
-}
-
-function hpacucli-update-7.6 () {
-    HPACUCLI=/usr/sbin/hpacucli
-    FILEHPACUCLI=${DIARIO}/hpacucli-report
-    TMPDIR=`${MKTEMPDIR}`
-
-    echo -n "."
-    if [ ! -x ${HPACUCLI} ] ; then
-	return
-    fi
     
-    VERSION=`echo "exit" | ${HPACUCLI} | grep CLI | cut -d ' ' -f 6`
-    V=`echo $VERSION | cut -d - -f 1`
-    V1=`echo $V | cut -d . -f 1`
-    V2=`echo $V | cut -d . -f 2`
-    V3=`echo $V | cut -d . -f 3`
-    if [ $V1 -lt 7 ] ; then
-	hpacucli-update
-	return
-    fi
-
-    if [ $V2 -lt 60 ] ; then
-	hpacucli-update
-	return
-    fi
-
-    > ${FILEHPACUCLI}
-    echo "Controllers" >> ${FILEHPACUCLI}
-    ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
-
-    echo -n "."
-    ${HPACUCLI} controller all show detail >> ${FILEHPACUCLI} 
-
-    echo -n "."
-    ${HPACUCLI} controller all show config >> ${FILEHPACUCLI} 
-    
-    echo -n "."
-    ${HPACUCLI} controller all show config detail >> ${FILEHPACUCLI} 
-    
-    rm -rf ${TMPDIR}
 }
-
-
-
-
-function net-update () {
-    FILENET=${DIARIO}/net-list
-    IFCONFIG=/sbin/ifconfig
-    ROUTE=/sbin/route
-    IP=/sbin/ip
-    
-    echo -n "."
-    > ${FILENET}
-    echo "ifconfig cleaned     $RANDOM"		>> ${FILENET}
-    ${IFCONFIG} | grep -v TX | grep -v RX	>> ${FILENET}
-    echo "ifconfig             $RANDOM"         >> ${FILENET}
-    ${IFCONFIG}            >> ${FILENET}
-    # Get routing tables
-    if [ $OSTYPE == "darwin8.0" ] ; then
-	netstat -nr            >> ${FILENET}
-    else
-	echo "route"           >> ${FILENET}
-	${ROUTE}               >> ${FILENET}
-	echo "route -A inet6 cleaned     $RANDOM"  >> ${FILENET}
-	printf "%45s %40s %8s %8s %4s %4s %10s\n" "Destination" \
-	    "Next Hop" "Flags" "Metric" "Ref" "Use" "Iface" \
-	    >> ${FILENET}
-	${ROUTE} -A inet6 \
-	    | awk '{printf "%45s %40s %8s %8s XXXX XXXX %10s\n",$1,$2,$3,$4,$7}' \
-	    >> ${FILENET}
-	echo "route -A inet6             $RANDOM"  >> ${FILENET}
-	${ROUTE} -A inet6      >> ${FILENET}
-    fi
-
-    # Get all info using iproute software
-    if [ -x ${IP} ] ; then
-	echo "ip link"         >> ${FILENET}
-	${IP} link             >> ${FILENET}
-	echo "ip addr"         >> ${FILENET}
-	${IP} addr             >> ${FILENET}
-	echo "ip addr"         >> ${FILENET}
-	${IP} route            >> ${FILENET}
-	echo "ip -6 route cleaned up $RANDOM"     >> ${FILENET}
-	# Updated for gisela on sarge 20070328
-        # Updated for atena on 20070326 on etch
-	# Updated for afs06-unstable on 20070328 on etch
-	${IP} -6 route \
-	    | gawk '\
-/^[0-9a-fA-F\/:]+ dev [.[:alnum:]]+  proto kernel  metric.*/ \
-    { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7" " $8 " XXXX " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 } \
-/^[0-9a-fA-F\/:]+ dev [.[:alnum:]]+  metric/ \
-    { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " XXXX " $8 " " $9 " " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 } \
-/^unreachable.*expires/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " XXXX " $9 " " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 " " $17 } \
-/^unreachable.+dev [.[:alnum:]]+  proto/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8" " $9 " " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 " " $17 } \
-/^default.*dev [.[:alnum:]]+  proto kernel  metric.*/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " " $9 " " $10 " XXXX " $12 " " $13 " " $14 " " $15 " " $16 " " $17 " " $18 " " $19 " " $20 " " $21 " " $22}\
-/^default.*dev [.[:alnum:]]+  metric/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " XXXX " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 " " $17 " " $18 " " $19 " " $20 " " $21 " " $22}\
-'\
-	    >> ${FILENET}
-	echo "ip -6 route            $RANDOM"     >> ${FILENET}
-	${IP} -6 route         >> ${FILENET}
-	echo "ip tunnel"       >> ${FILENET}
-	${IP} tunnel           >> ${FILENET}
-    fi
-    cat-file /proc/net/dev         ${FILENET}
-    cat-file /proc/net/dev_mcast   ${FILENET}
-    cat-file /proc/net/protocols   ${FILENET}
-    cat-file /proc/sys/net/ipv4/ip_forward                  ${FILENET}
-    cat-file /proc/sys/net/ipv4/neigh/default/gc_interval   ${FILENET}
-    cat-file /proc/sys/net/ipv4/neigh/default/gc_stale_time ${FILENET} 
-    cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh1    ${FILENET}
-    cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh2    ${FILENET}
-    cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh3    ${FILENET}
-    cat-file /proc/sys/net/ipv6/conf/all/forwarding         ${FILENET}
-    cat-file /proc/sys/net/ipv6/conf/all/mtu                ${FILENET}
-    cat-file /proc/sys/net/ipv6/neigh/default/gc_interval   ${FILENET}
-    cat-file /proc/sys/net/ipv6/neigh/default/gc_stale_time ${FILENET} 
-    cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh1    ${FILENET}
-    cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh2    ${FILENET}
-    cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh3    ${FILENET}
-
-    echo "Should reduce netfilter variables to record"   >> ${FILENET}
-    for file in /proc/sys/net/ipv4/netfilter/* ; do
-	cat-file "${file}" ${FILENET}
-    done
-}
-
-function services-update () {
-    FILESERVICES=${DIARIO}/services
-    NTPQ=/usr/bin/ntpq
-    HWCLOCK=/sbin/hwclock
-
-    echo -n "."
-    > ${FILESERVICES}
-    echo "clock services"                                    >> ${FILESERVICES}
-    echo "Hardware Clock"                                    >> ${FILESERVICES}
-    hwclock --show                                           >> ${FILESERVICES}
-    echo -n "."
-    echo "ntpq -p"                                           >> ${FILESERVICES}
-    ntpq -p                                                  >> ${FILESERVICES}
-    echo -n "."
-    echo "ntpdc -p"                                          >> ${FILESERVICES}
-    ntpdc -p                                                 >> ${FILESERVICES}
-    echo -n "."
-    echo "ntpdc -c loopinfo"                                 >> ${FILESERVICES}
-    ntpdc -c loopinfo                                        >> ${FILESERVICES}
-    echo "ntpdc -c kerninfo"                                 >> ${FILESERVICES}
-    ntpdc -c kerninfo                                        >> ${FILESERVICES}
-    echo "ntptime"                                           >> ${FILESERVICES}
-    ntptime                                                  >> ${FILESERVICES}
-    FRMT="%5s  %10s  %14s  %10s  %14s  %10s  %4s\n"
-    printf "$FRMT"\
-	"day" "second" "offset" "drift comp" "est error" "stab"\
-	"polling interval"\
-	>> ${FILESERVICES}
-    tail -n 40 /var/log/ntpstats/loopstats \
-	| awk '{printf "%5s  %10s  %14s  %10s  %14s  %10s  %4s\n",$1,$2,$3,$4,$5,$6,$7}' \
-        >> ${FILESERVICES}
-    FRMT="%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n"
-    printf "$FRMT"\
-	"day" "second" "address" "stat" "offset" "delay" "dispersion"\
-	"skew (variance)" >> ${FILESERVICES}
-    tail -n 40 /var/log/ntpstats/peerstats \
-	| awk '{printf "%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n",$1,$2,$3,$4,$5,$6,$7,$8}' \
-	>> ${FILESERVICES}
-}
-
 
 if [ -d ${DIARIO} ] ; then
-    echo -n "Updating "
     packages-list-update
     partition-update
     lvm-update
-    md-update
     kernel-update
-    kernel-boot
     hardware-update
-    hpacucli-update-7.6
-    net-update
-    services-update
-    echo " Done"
 else
     echo "Don't exist ${DIARIO} directory, not running"
 fi
