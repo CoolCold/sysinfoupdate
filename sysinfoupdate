@@ -969,22 +969,40 @@ function services-update () {
 
 if [ -d ${DIARIO} ] ; then
     echo -n "Updating "
+    date
+    ipmi-update &
+    date
+    hpacucli-update &
+    date
     packages-list-update
+    date
     partition-update &
+    date
     lvm-update
+    date
     md-update
+    date
     kernel-boot
+    date
     hardware-update
+    date
     video-update
-    ipmi-update
-    hpacucli-update
+    date
+
+
+    date
     twcli-update
+    date
     net-update
+    date
     services-update
+    date
     kernel-update
+    date
     echo "Waiting for slow tasks"
     wait
     echo " Done"
+    date
 else
     echo "Don't exist ${DIARIO} directory, not running"
 fi
