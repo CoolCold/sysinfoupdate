@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-04-28 17:07:31 +0100 (Qui, 28 Abr 2011) $
+# $Date: 2011-05-06 22:24:20 +0100 (Sex, 06 Mai 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4923 $
+# $Revision: 4945 $
 
 
 
@@ -75,6 +75,7 @@ set-command SDPARM sdparm
 set-command HPADUCLI hpaducli "For SCSI from HP/Compaq"
 set-command HPACUCLI hpacucli "For SCSI from HP/Compaq"
 set-command HPASMCLI hpasmcli "For Hardware from HP/Compaq"
+set-command HPONCFG hponcfg "For iLO Hardware from HP/COmpaq"
 set-command PRTCONF prtconf "For SPARC Machines"
 set-command EEPROM eeprom "For SPARC Machines"
 set-command HWINFO hwinfo
@@ -126,7 +127,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4923 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4945 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -891,6 +892,11 @@ function hpacucli-update () {
     hpacucli-update-generic
 }
 
+function ilo-update () {
+    FILEHPONCFG=${DIARIO}/hponcfg-xml
+    
+    ${HPONCFG} -a -w ${FILEHPONCFG}
+}
 
 function twcli-update () {
     FILETWCLI=${DIARIO}/twcli-report
@@ -1098,6 +1104,8 @@ if [ -d ${DIARIO} ] ; then
     echo -n "Updating "
     date
     hpacucli-update &
+    date
+    ilo-update &
     date
     partition-update &
     lvm-update
