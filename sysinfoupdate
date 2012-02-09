@@ -504,6 +504,8 @@ function hardware-update () {
 	echo_execute ${FILEHARDWARE} $EEPROM ""
     fi
 
+    echo -n "."
+    > ${FILEHWINFO}
     echo_execute ${FILEHWINFO}  ${HWINFO} "--short"
     echo_execute ${FILEHWINFO}  ${HWINFO} ""
 }
@@ -515,10 +517,9 @@ function video-update () {
     PARSEEDID=/usr/bin/parse-edid
     HWINFO=/usr/sbin/hwinfo
 
-    if test ! -e ${FILEVIDEO} ; then
-	touch ${FILEVIDEO}
-    fi
+    > ${FILEVIDEO}
     
+    echo -n "."
     if test -r /var/log/Xorg.0.log ; then
 	cp /var/log/Xorg.0.log ${DIARIO}
     fi
@@ -527,6 +528,7 @@ function video-update () {
 	echo_execute ${FILEVIDEO} ${HWINFO} --gfxcard --monitor --vbe --tv --zip
     fi
 
+    echo -n "."
     if test  -x ${GETEDID}  -a  -x ${PARSEEDID}  ; then
 	echo "#################### get-edid | parse-edid "   >> ${FILEVIDEO}
 	${GETEDID} | ${PARSEEDID}                            >> ${FILEVIDEO}
