@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2012-01-14 19:03:28 +0000 (Sáb, 14 Jan 2012) $
+# $Date: 2012-01-14 19:25:31 +0000 (Sáb, 14 Jan 2012) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2178 $ Calhariz
+# $Revision: 2179 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2178 $ Calhariz'
+VERSION=' $Revision: 2179 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -605,6 +605,7 @@ function hardware-update () {
 function hdparm-update () {
 #     HDPARM=/sbin/hdparm
     FILEHDPARM=${DIARIO}/hdparm-list
+    FILESDPARM=${DIARIO}/sdparm-list
 
     HDPARMSPEED="${HDPARM} -tT"
     if test -x /usr/bin/nice ; then
@@ -626,12 +627,14 @@ function hdparm-update () {
  	    echo_execute ${FILEHDPARM} ${HDPARMSPEED} ${disk}
 	fi
     done
+
+    > ${FILESDPARM}
     for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
- 	    echo_execute ${FILEHDPARM} ${SDPARM} --all                  ${disk}
- 	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long           ${disk}
- 	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long --verbose ${disk}
+ 	    echo_execute ${FILESDPARM} ${SDPARM} --all                  ${disk}
+ 	    echo_execute ${FILESDPARM} ${SDPARM} --all --long           ${disk}
+ 	    echo_execute ${FILESDPARM} ${SDPARM} --all --long --verbose ${disk}
 	fi
     done
     #set +x
