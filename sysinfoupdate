@@ -194,10 +194,15 @@ function kernel-update () {
 	cmdebug localhost -cache        >> ${FILEKERNEL}
     fi
     echo "/proc/sys"                            >> ${FILEKERNEL}
+    cat-file /proc/sys/dev/cdrom/info              ${FILEKERNEL}
+    cat-file /proc/sys/kernel/core_pattern         ${FILEKERNEL}
+    cat-file /proc/sys/kernel/core_uses_pid        ${FILEKERNEL}
     cat-file /proc/sys/kernel/randomize_va_space   ${FILEKERNEL}
     cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/poolsize      ${FILEKERNEL}
+    cat-file /proc/sys/vm/laptop_mode              ${FILEKERNEL}
+    cat-file /proc/sys/vm/panic_on_oom             ${FILEKERNEL}
     cat-file /proc/sys/vm/vdso_enabled             ${FILEKERNEL}
 }
 
@@ -335,6 +340,7 @@ function hardware-update () {
 
     cat-file /proc/acpi/alarm			${FILEHARDWARE}
     cat-file /proc/acpi/info			${FILEHARDWARE}
+    cat-file /proc/acpi/button/power/PWRB/info	${FILEHARDWARE}
     cat-file /proc/acpi/button/power/PWRF/info	${FILEHARDWARE}
     
     if [ -d /proc/acpi/processor/CPU0 ] ; then
