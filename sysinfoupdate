@@ -465,11 +465,18 @@ function ipmi-update () {
     
     echo_execute ${FILEIPMI} ipmitool "chassis status"
     echo_execute ${FILEIPMI} ipmitool "chassis selftest"
+    echo_execute ${FILEIPMI} ipmitool "channel info"
+    echo_execute ${FILEIPMI} ipmitool "channel info 0"
+    echo_execute ${FILEIPMI} ipmitool "channel info 1"
+    echo_execute ${FILEIPMI} ipmitool "channel info 2"
+    echo_execute ${FILEIPMI} ipmitool "channel info 3"
     echo_execute ${FILEIPMI} ipmitool "mc guid"
     echo_execute ${FILEIPMI} ipmitool "mc info"
+    echo_execute ${FILEIPMI} ipmitool "fru print"
     echo_execute ${FILEIPMI} ipmitool "mc getenables"
     echo_execute ${FILEIPMI} ipmitool "mc selftest"
     echo_execute ${FILEIPMI} ipmitool "lan print"
+    echo_execute ${FILEIPMI} ipmitool "pef info"
     echo_execute ${FILEIPMI} ipmitool "pef status"
     echo -n "."
     echo_execute ${FILEIPMI} ipmitool "sdr info"
@@ -479,8 +486,14 @@ function ipmi-update () {
     echo_execute ${FILEIPMI} ipmitool "sensor list"
     echo -n "."
     echo_execute ${FILEIPMI} ipmitool "session info all"
+    echo_execute ${FILEIPMI} ipmitool "sol info 0"
+    echo_execute ${FILEIPMI} ipmitool "sol info 1"
     echo_execute ${FILEIPMI} ipmitool "user summary"
     echo_execute ${FILEIPMI} ipmitool "user list"
+    echo_execute ${FILEIPMI} ipmitool "sel time get"
+    echo_execute ${FILEIPMI} ipmitool "sel info"
+    echo_execute ${FILEIPMI} ipmitool "sel list"
+    echo -n "."
 }
 
 
