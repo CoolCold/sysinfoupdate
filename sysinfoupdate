@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 21:20:05 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 21:26:51 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2157 $ Calhariz
+# $Revision: 2158 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2157 $ Calhariz'
+VERSION=' $Revision: 2158 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -163,7 +163,7 @@ function partition-update () {
 
     echo -n "."
     > ${FILEPART}
-    for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	echo -n "${disk} "
 	if test -r ${disk} ; then
 	echo -n "${disk} "
@@ -591,7 +591,7 @@ function hardware-update () {
 
     #set -x
     > ${FILEHDPARM}
-    for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
 # 	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
