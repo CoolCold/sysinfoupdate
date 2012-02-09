@@ -767,20 +767,24 @@ function services-update () {
     echo "ntptime"                                           >> ${FILESERVICES}
     ntptime                                                  >> ${FILESERVICES}
     FRMT="%5s  %10s  %14s  %10s  %14s  %10s  %4s\n"
-    printf "$FRMT"\
-	"day" "second" "offset" "drift comp" "est error" "stab"\
-	"polling interval"\
-	>> ${FILESERVICES}
-    tail -n 40 /var/log/ntpstats/loopstats \
-	| awk '{printf "%5s  %10s  %14s  %10s  %14s  %10s  %4s\n",$1,$2,$3,$4,$5,$6,$7}' \
-        >> ${FILESERVICES}
-    FRMT="%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n"
-    printf "$FRMT"\
-	"day" "second" "address" "stat" "offset" "delay" "dispersion"\
-	"skew (variance)" >> ${FILESERVICES}
-    tail -n 40 /var/log/ntpstats/peerstats \
-	| awk '{printf "%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n",$1,$2,$3,$4,$5,$6,$7,$8}' \
-	>> ${FILESERVICES}
+    if test -r /var/log/ntpstats/loopstats ; then
+	printf "$FRMT"\
+	    "day" "second" "offset" "drift comp" "est error" "stab"\
+	    "polling interval"\
+	    >> ${FILESERVICES}
+	tail -n 40 /var/log/ntpstats/loopstats \
+	    | awk '{printf "%5s  %10s  %14s  %10s  %14s  %10s  %4s\n",$1,$2,$3,$4,$5,$6,$7}' \
+	    >> ${FILESERVICES}
+    fi
+    if test -r /var/log/ntpstats/peerstats ; then
+	FRMT="%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n"
+	printf "$FRMT"\
+	    "day" "second" "address" "stat" "offset" "delay" "dispersion"\
+	    "skew (variance)" >> ${FILESERVICES}
+	tail -n 40 /var/log/ntpstats/peerstats \
+	    | awk '{printf "%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n",$1,$2,$3,$4,$5,$6,$7,$8}' \
+	    >> ${FILESERVICES}
+    fi
 }
 
 
