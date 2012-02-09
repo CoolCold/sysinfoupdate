@@ -1,19 +1,21 @@
 #!/bin/bash
 #
 # (c) 2005-2011 Instituto Superior Técnico
+# 
+# Author: Jose Calhariz <jose.calhariz@tagus.ist.utl.pt>
 #
 # License: GPL-2
 #
-# $Date: 2012-01-16 12:27:37 +0000 (Seg, 16 Jan 2012) $
+# $Date: 2012-01-27 16:09:34 +0000 (Sex, 27 Jan 2012) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2181 $ Calhariz
+# $Revision: 2189 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2181 $ Calhariz'
+VERSION=' $Revision: 2189 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
