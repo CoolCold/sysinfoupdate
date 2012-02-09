@@ -539,12 +539,13 @@ function net-update () {
 	echo "ip addr"         >> ${FILENET}
 	${IP} route            >> ${FILENET}
 	echo "ip -6 route cleaned up"     >> ${FILENET}
+	# Updated for atena on 20070326 on etch
 	${IP} -6 route \
 	    | awk '\
 /^[0-9a-fA-F\/:]+ / \
     { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " XXXX " $8 " " $9 " " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 } \
 /^unreachable/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " XXXX " $9 " " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 " " $17 } \
-/^default/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " " $9 " " $10 " XXXX " $12 " " $13 " " $14 " " $15 " " $16 " " $17 " " $18 " " $19 " " $20 " " $21 " " $22}'\
+/^default/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " XXXX " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 " " $17 " " $18 " " $19 " " $20 " " $21 " " $22}'\
 	    >> ${FILENET}
 	echo "ip -6 route"     >> ${FILENET}
 	${IP} -6 route         >> ${FILENET}
