@@ -199,6 +199,7 @@ function kernel-update () {
     cat-file /proc/lvm/global  ${FILEKERNEL}
     cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
+    cat-file /proc/sys/fs/nr_open          ${FILEKERNEL}
 
     echo "OpenAFS client"               >> ${FILEKERNEL}
     if [ -x ${AFSD1} ] ; then
@@ -223,9 +224,16 @@ function kernel-update () {
     cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/poolsize      ${FILEKERNEL}
+    cat-file /proc/sys/kernel/nmi_watchdog         ${FILEKERNEL}
+    cat-file /proc/sys/kernel/panic_on_unrecovered_nmi ${FILEKERNEL}
+    cat-file /proc/sys/kernel/kstack_depth_to_print ${FILEKERNEL}
+    cat-file /proc/sys/kernel/poweroff_cmd         ${FILEKERNEL}
     cat-file /proc/sys/vm/laptop_mode              ${FILEKERNEL}
     cat-file /proc/sys/vm/panic_on_oom             ${FILEKERNEL}
     cat-file /proc/sys/vm/vdso_enabled             ${FILEKERNEL}
+    cat-file /proc/sys/vm/nr_hugepages             ${FILEKERNEL}
+    cat-file /proc/sys/vm/nr_overcommit_hugepages  ${FILEKERNEL}
+    cat-file /proc/sys/vm/stat_interval            ${FILEKERNEL}
 }
 
 function kernel-boot () {
@@ -685,6 +693,8 @@ function net-update () {
     cat-file /proc/net/dev         ${FILENET}
     cat-file /proc/net/dev_mcast   ${FILENET}
     cat-file /proc/net/protocols   ${FILENET}
+    cat-file /proc/sys/net/ipv4/tcp_available_congestion_control   ${FILENET}
+    cat-file /proc/sys/net/ipv4/tcp_allowed_congestion_control     ${FILENET}
     cat-file /proc/sys/net/ipv4/ip_forward                  ${FILENET}
     cat-file /proc/sys/net/ipv4/neigh/default/gc_interval   ${FILENET}
     cat-file /proc/sys/net/ipv4/neigh/default/gc_stale_time ${FILENET} 
