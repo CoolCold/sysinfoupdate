@@ -702,6 +702,8 @@ function net-update () {
     cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh1    ${FILENET}
     cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh2    ${FILENET}
     cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh3    ${FILENET}
+    cat-file /proc/sys/net/ipv4/route/min_delay             ${FILENET}
+    cat-file /proc/sys/net/ipv4/route/max_delay             ${FILENET}
     cat-file /proc/sys/net/ipv6/conf/all/forwarding         ${FILENET}
     cat-file /proc/sys/net/ipv6/conf/all/mtu                ${FILENET}
     cat-file /proc/sys/net/ipv6/neigh/default/gc_interval   ${FILENET}
