@@ -508,6 +508,32 @@ function hardware-update () {
 }
 
 
+function video-update () {
+    FILEVIDEO=${DIARIO}/video-list
+    GETEDID=/usr/bin/get-edid
+    PARSEEDID=/usr/bin/parse-edid
+    HWINFO=/usr/sbin/hwinfo
+
+    if test ! -e ${FILEVIDEO} ; then
+	touch ${FILEVIDEO}
+    fi
+    
+    if test -r /var/log/Xorg.0.log ; then
+	cp /var/log/Xorg.0.log ${DIARIO}
+    fi
+
+    if test -x ${HWINFO} ; then
+	echo_execute ${FILEVIDEO} ${HWINFO} --gfxcard --monitor --vbe --tv --zip
+    fi
+
+    if test  -x ${GETEDID}  -a  -x ${PARSEEDID}  ; then
+	echo "#################### get-edid | parse-edid "   >> ${FILEVIDEO}
+	${GETEDID} | ${PARSEEDID}                            >> ${FILEVIDEO}
+    fi
+
+}
+
+
 function ipmi-update () {
     FILEIPMI=${DIARIO}/ipmi-report
 
@@ -858,6 +884,7 @@ if [ -d ${DIARIO} ] ; then
     md-update
     kernel-boot
     hardware-update
+    video-update
     ipmi-update
     hpacucli-update-7.6
     twcli-update
