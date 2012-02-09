@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 21:49:54 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 23:37:08 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2163 $ Calhariz
+# $Revision: 2164 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2163 $ Calhariz'
+VERSION=' $Revision: 2164 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -23,6 +23,15 @@ if test ! -x ${WHICH} ; then
     echo "Which not found in system, using builtin bash version"
     WHICH=which
 fi
+
+function usage () {
+    echo "$0: [all | fast | slow | parallel]"
+    echo "The options select what kind of tasks for collecting information"
+    echo "    all  - do all the tasks sequencially, default action"
+    echo "    fast - do fasts tasks for collecting information"
+    echo "    slow - do slow and demanding tasks"
+    echo "    parallel - do fast and slow tasks in parallel"
+}
 
 function set-command () {
     #echo "$1" "$2"
@@ -159,7 +168,6 @@ function partition-update () {
 #     CP=/bin/cp
 #     DF=/bin/df
     FILEPART=${DIARIO}/part-list
-    FILEFSTAB=${DIARIO}/fstab
     FILEFS=${DIARIO}/fs-list
 
     echo -n "."
@@ -201,6 +209,10 @@ function partition-update () {
     echo_execute ${FILEFS} ${DF} -h
     echo "inodes of filesystems df -iH" >> ${FILEFS}
     echo_execute ${FILEFS} ${DF} -iH
+}
+
+function fstab-update () {
+    FILEFSTAB=${DIARIO}/fstab
     
     ${CP} /etc/fstab ${FILEFSTAB}
 }
@@ -1132,27 +1144,108 @@ function services-update () {
     fi
 }
 
+function update-fast-diario () {
+    date
+    echo -n "  lvm-update begin   "
+    lvm-update
+    date
+    echo -n "  md-update begin   "
+    md-update
+    date
+    echo -n "  fstab-update begin   "
+    fstab-update
+    date
+    echo -n "  kernel-boot begin   "
+    kernel-boot
+    date
+    echo -n "  hardware begin   "
+    hardware-update
+    echo -n "  hardware finished  "
+    date
+    packages-list-update 
+    date
+    net-update
+    date
+    services-update
+    date
+    echo -n "  kernel-update begin   "
+    kernel-update
+    echo -n "  kernel-update finished   "
+    date
+}
+
+function update-slow-diario () {
+    date
+    echo -n "  hpacucli begin   "
+    hpacucli-update &
+    #echo -n "  hpacucli finished   "
+    echo
+    date
+    echo -n "  ilo-update begin    "
+    ilo-update &
+    #echo -n "  ilo-update finished   "
+    echo
+    date
+    echo -n "  partition-update begin   "
+    partition-update &
+    echo "   Waiting for slow tasks   "
+    wait
+    echo " Done "
+    date
+    echo "Doing demanding tasks"
+    date
+    hwinfo-update
+    echo
+    echo -n "hwinfo-update finished   " 
+    hdparm-update
+    echo
+    echo -n "hdparm-update finished   " 
+    date
+    hp-hardware-update
+    echo
+    echo -n "hp-hardware-update finished   " 
+    date
+    video-update
+    echo
+    echo -n "video-update finished   "
+    date
+    ipmi-update
+    echo
+    echo -n "ipmi-update finished   "
+    date
+    twcli-update
+    echo
+    echo -n "twcli-update finished   "
+    date
+}
 
 if [ -d ${DIARIO} ] ; then
-    echo -n "Updating "
-    packages-list-update
-    partition-update
-    lvm-update
-    md-update
-    kernel-boot
-    hardware-update
-    hdparm-update
-    hp-hardware-update
-    hwinfo-update
-    video-update
-    ipmi-update
-    hpacucli-update
-    ilo-update
-    twcli-update
-    net-update
-    services-update
-    kernel-update
-    echo " Done"
+    if test $# -eq 0 ; then
+	update-slow-diario
+	update-fast-diario
+	wait
+    else
+	case $1 in
+	    slow)
+		update-slow-diario 
+		;;
+	    fast)
+		update-fast-diario
+		;;
+	    all)
+		update-slow-diario
+		update-fast-diario
+		wait
+		;;
+	    parallel)
+		update-slow-diario &
+		update-fast-diario &
+		wait
+		;;
+	    *)
+		usage
+	esac
+    fi
 else
     echo "Don't exist ${DIARIO} directory, not running"
 fi
