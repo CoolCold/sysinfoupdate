@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2012-01-14 19:36:22 +0000 (Sáb, 14 Jan 2012) $
+# $Date: 2012-01-16 12:27:37 +0000 (Seg, 16 Jan 2012) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2180 $ Calhariz
+# $Revision: 2181 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2180 $ Calhariz'
+VERSION=' $Revision: 2181 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -1138,6 +1138,9 @@ function services-update () {
 	    | awk '{printf "%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n",$1,$2,$3,$4,$5,$6,$7,$8}' \
 	    >> ${FILESERVICES}
     fi
+    echo "Collect info about nsswitch" >> ${FILESERVICES}
+    cat-file /etc/nsswitch.conf           ${FILESERVICES}
+    cat-file /etc/defaultdomain           ${FILESERVICES}
 }
 
 function update-fast-diario () {
