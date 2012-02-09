@@ -405,6 +405,32 @@ function hardware-update () {
     cat-file /proc/acpi/button/power/PWRB/info	${FILEHARDWARE}
     cat-file /proc/acpi/button/power/PWRF/info	${FILEHARDWARE}
     
+    if [ -d /proc/acpi/ac_adapter/ADP* ] ; then
+       for adp in /proc/acpi/ac_adapter/ADP* ; do
+           if [ -d ${adp} ] ; then
+               pushd ${adp} > /dev/null
+               for file in ${adp}/* ; do
+                   if [ -f "${file}" ] ; then
+                       cat-file "${file}"      ${FILEHARDWARE}
+                   fi
+               done
+           fi
+       done
+    fi
+
+    if [ -d /proc/acpi/battery/BAT* ] ; then
+       for bat in /proc/acpi/battery/BAT* ; do
+           if [ -d ${bat} ] ; then
+               pushd ${bat} > /dev/null
+               for file in ${bat}/* ; do
+                   if [ -f "${file}" ] ; then
+                       cat-file "${file}"      ${FILEHARDWARE}
+                   fi
+               done
+           fi
+       done
+    fi
+
     if [ -d /proc/acpi/processor/CPU0 ] ; then
        pushd /proc/acpi/processor > /dev/null 
        for cpu in /proc/acpi/processor/CPU* ; do
