@@ -102,7 +102,8 @@ function partition-update () {
     done
     echo -n "."
     if test -x ${PARTED} ; then
-	${PARTED} -l >> ${FILEPART}
+	time ${PARTED} -l >> ${FILEPART}
+	echo "parted -l"
     else
 	echo 
 	echo "${PARTED} not found, please check or install parted"
@@ -969,7 +970,7 @@ function services-update () {
 if [ -d ${DIARIO} ] ; then
     echo -n "Updating "
     packages-list-update
-    partition-update
+    partition-update &
     lvm-update
     md-update
     kernel-boot
@@ -981,6 +982,8 @@ if [ -d ${DIARIO} ] ; then
     net-update
     services-update
     kernel-update
+    echo "Waiting for slow tasks"
+    wait
     echo " Done"
 else
     echo "Don't exist ${DIARIO} directory, not running"
