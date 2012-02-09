@@ -319,17 +319,36 @@ function hardware-update () {
     cat-file /proc/pmu/info                   ${FILEHARDWARE}
     cat-file /proc/pmu/options                ${FILEHARDWARE}
 
+    cat-file /proc/acpi/alarm			${FILEHARDWARE}
+    cat-file /proc/acpi/info			${FILEHARDWARE}
+    cat-file /proc/acpi/button/power/PWRF/info	${FILEHARDWARE}
+    
+    if [ -d /proc/acpi/processor/CPU0 ] ; then
+	pushd /proc/acpi/processor > /dev/null 
+	for cpu in /proc/acpi/processor/CPU* ; do
+	    if [ -d ${cpu} ] ; then
+		pushd ${cpu} > /dev/null
+		for file in ${cpu}/* ; do
+		    if [ -f "${file}" ] ; then
+			cat-file "${file}"	${FILEHARDWARE}
+		    fi
+		done
+	    fi
+	done
+    fi
+
     pushd /sys/devices/system/cpu > /dev/null
-    for cpu in cpu* ; do
-	if [ -d ${cpu}/cpufreq ] ; then
-	    pushd ${cpu}/cpufreq > /dev/null
-	    for file in * ; do
-		if [ -f "${file}" ] ; then
-		    cat-file /sys/devices/system/cpu/${cpu}/cpufreq/${file}		${FILEHARDWARE}
-		fi
-	    done
-	fi
-    done
+    if [ -d /sys/devices/system/cpu ] ; then
+	for cpu in /sys/devices/system/cpu* ; do
+	    if [ -d ${cpu}/cpufreq ] ; then
+		for file in ${cpu}/cpufreq/* ; do
+		    if [ -f "${file}" ] ; then
+			cat-file "${file}"	${FILEHARDWARE}
+		    fi
+		done
+	    fi
+	done
+    fi
 
     echo "IO Scheduler"			     >> ${FILEHARDWARE}
     for file in /sys/block/*/queue/* ; do
