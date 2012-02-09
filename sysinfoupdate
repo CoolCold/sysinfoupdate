@@ -104,7 +104,8 @@ function partition-update () {
     echo "mounted partitions"           >> ${FILEFS}
     case $OSTYPE in
 	linux-gnu)
-	    ${MOUNT} -l                         >> ${FILEFS}
+	    cat-file /proc/mounts                  ${FILEFS}
+	    echo_execute ${FILEFS} ${MOUNT} -l
 	    ;;
 	darwin8.0)
 	    ${MOUNT}                            >> ${FILEFS}
