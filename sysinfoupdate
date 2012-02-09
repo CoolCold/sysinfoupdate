@@ -585,6 +585,46 @@ function net-update () {
     done
 }
 
+function services-update () {
+    FILESERVICES=${DIARIO}/services
+    NTPQ=/usr/bin/ntpq
+    HWCLOCK=/sbin/hwclock
+
+    echo -n "."
+    > ${FILESERVICES}
+    echo "clock services"                                    >> ${FILESERVICES}
+    echo "Hardware Clock"                                    >> ${FILESERVICES}
+    hwclock --show                                           >> ${FILESERVICES}
+    echo -n "."
+    echo "ntpq -p"                                           >> ${FILESERVICES}
+    ntpq -p                                                  >> ${FILESERVICES}
+    echo -n "."
+    echo "ntpdc -p"                                          >> ${FILESERVICES}
+    ntpdc -p                                                 >> ${FILESERVICES}
+    echo -n "."
+    echo "ntpdc -c loopinfo"                                 >> ${FILESERVICES}
+    ntpdc -c loopinfo                                        >> ${FILESERVICES}
+    echo "ntpdc -c kerninfo"                                 >> ${FILESERVICES}
+    ntpdc -c kerninfo                                        >> ${FILESERVICES}
+    echo "ntptime"                                           >> ${FILESERVICES}
+    ntptime                                                  >> ${FILESERVICES}
+    FRMT="%5s  %10s  %14s  %10s  %14s  %10s  %4s\n"
+    printf "$FRMT"\
+	"day" "second" "offset" "drift comp" "est error" "stab"\
+	"polling interval"\
+	>> ${FILESERVICES}
+    tail /var/log/ntpstats/loopstats \
+	| awk '{printf "%5s  %10s  %14s  %10s  %14s  %10s  %4s\n",$1,$2,$3,$4,$5,$6,$7}' \
+        >> ${FILESERVICES}
+    FRMT="%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n"
+    printf "$FRMT"\
+	"day" "second" "address" "stat" "offset" "delay" "dispersion"\
+	"skew (variance)" >> ${FILESERVICES}
+    cat /var/log/ntpstats/peerstats \
+	| awk '{printf "%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n",$1,$2,$3,$4,$5,$6,$7,$8}' \
+	>> ${FILESERVICES}
+}
+
 
 if [ -d ${DIARIO} ] ; then
     echo -n "Updating "
@@ -597,6 +637,7 @@ if [ -d ${DIARIO} ] ; then
     hardware-update
     hpacucli-update-7.6
     net-update
+    services-update
     echo " Done"
 else
     echo "Don't exist ${DIARIO} directory, not running"
