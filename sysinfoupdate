@@ -321,6 +321,7 @@ function hardware-update () {
     cat-file /proc/bus/input/devices          ${FILEHARDWARE}
     cat-file /proc/bus/input/handlers         ${FILEHARDWARE}
     cat-file /proc/bus/ieee1394/devices       ${FILEHARDWARE}
+    cat-file /proc/bus/pccard/drivers         ${FILEHARDWARE}
     cat-file /proc/bus/usb/devices            ${FILEHARDWARE}
     cat-file /proc/bus/usb/drivers            ${FILEHARDWARE}
     cat-file /proc/ide/drivers                ${FILEHARDWARE}
