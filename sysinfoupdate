@@ -241,6 +241,7 @@ function kernel-update () {
     echo "OpenAFS cache settings"       >> ${FILEKERNEL}
     if cmdebug > /dev/null 2>&1; then
 	cmdebug localhost -cache        >> ${FILEKERNEL}
+	cmdebug localhost -addrs        >> ${FILEKERNEL}
     fi
 }
 
