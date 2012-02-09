@@ -4,15 +4,19 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-07-06 17:07:57 +0100 (Qua, 06 Jul 2011) $
+# $Date: 2011-08-05 12:34:55 +0100 (Sex, 05 Ago 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 5047 $
+# $Revision: 5090 $ CIIST
+
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
+VERSION=' $Revision: 5090 $ CIIST'
+
+echo "$PROG" "$VERSION"
 
 # Define VARS to call commands
 WHICH=`which which`
@@ -26,7 +30,8 @@ function usage () {
     echo "The options select what kind of tasks for collecting information"
     echo "    fast - do fasts tasks for collecting information"
     echo "    slow - do slow and demanding tasks"
-    echo "    all  - do all the tasks, default action"
+    echo "    all  - do all the tasks sequencially, default action"
+    echo "    parallel - do fast and slow tasks in parallel"
 }
 
 function set-command () {
@@ -135,7 +140,8 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 5047 $ CIIST' >> "${FILE}"
+	echo "$PROG" "$VERSION"           >> "${FILE}"
+
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -1134,10 +1140,13 @@ function services-update () {
 
 function update-fast-diario () {
     date
+    echo -n "  lvm-update begin   "
     lvm-update
     date
+    echo -n "  md-update begin   "
     md-update
     date
+    echo -n "  kernel-boot begin   "
     kernel-boot
     date
     echo -n "  hardware begin   "
@@ -1150,20 +1159,27 @@ function update-fast-diario () {
     date
     services-update
     date
+    echo -n "  kernel-update begin   "
     kernel-update
+    echo -n "  kernel-update finished   "
     date
 }
 
 function update-slow-diario () {
     date
+    echo -n "  hpacucli begin   "
     hpacucli-update &
+    #echo -n "  hpacucli finished   "
     echo
     date
+    echo -n "  ilo-update begin    "
     ilo-update &
+    #echo -n "  ilo-update finished   "
     echo
     date
+    echo -n "  partition-update begin   "
     partition-update &
-    echo -n "Waiting for slow tasks"
+    echo "   Waiting for slow tasks   "
     wait
     echo " Done "
     date
@@ -1171,33 +1187,33 @@ function update-slow-diario () {
     date
     hwinfo-update
     echo
-    echo -n "hwinfo-update " 
+    echo -n "hwinfo-update finished   " 
     hdparm-update
     echo
-    echo -n "hdparm-update " 
+    echo -n "hdparm-update finished   " 
     date
     hp-hardware-update
     echo
-    echo -n "hp-hardware-update " 
+    echo -n "hp-hardware-update finished   " 
     date
     video-update
     echo
-    echo -n "video-update "
+    echo -n "video-update finished   "
     date
     ipmi-update
     echo
-    echo -n "ipmi-update "
+    echo -n "ipmi-update finished   "
     date
     twcli-update
     echo
-    echo -n "twcli-update "
+    echo -n "twcli-update finished   "
     date
 }
 
 if [ -d ${DIARIO} ] ; then
     if test $# -eq 0 ; then
-	update-slow-diario &
-	update-fast-diario &
+	update-slow-diario
+	update-fast-diario
 	wait
     else
 	case $1 in
@@ -1208,6 +1224,11 @@ if [ -d ${DIARIO} ] ; then
 		update-fast-diario
 		;;
 	    all)
+		update-slow-diario
+		update-fast-diario
+		wait
+		;;
+	    parallel)
 		update-slow-diario &
 		update-fast-diario &
 		wait
