@@ -68,10 +68,11 @@ function kernel-update () {
 
     >${FILEKERNEL}
     cat-file /proc/version  ${FILEKERNEL}
-    ${LSMOD} >> ${FILEKERNEL}
-    echo >> ${FILEKERNEL}
-    cat-file /proc/dma ${FILEKERNEL}
-    cat-file /proc/fb  ${FILEKERNEL}
+    cat-file /proc/cmdline  ${FILEKERNEL}
+    cat-file /proc/devices  ${FILEKERNEL}
+    ${LSMOD}             >> ${FILEKERNEL}
+    echo                 >> ${FILEKERNEL}
+    cat-file /proc/fb       ${FILEKERNEL}
 }
 
 function hardware-update () {
@@ -82,15 +83,16 @@ function hardware-update () {
     FILEHDPARM=${DIARIO}/hdparm-list
     
     > ${FILEPCI}
-    echo "lspci" >> ${FILEPCI}
-    ${LSPCI} >> ${FILEPCI}
-    echo "lspci -tv" >> ${FILEPCI}
-    ${LSPCI} -tv >> ${FILEPCI}
-    echo "lspci -v" >> ${FILEPCI}
-    ${LSPCI} -v >> ${FILEPCI}
-    echo "lspci -vv" >> ${FILEPCI}
-    ${LSPCI} -vv >> ${FILEPCI}
-    ${LSPCI} -x > ${FILEPCI}-x
+    echo "lspci ####################"       >> ${FILEPCI}
+    ${LSPCI}           >> ${FILEPCI}
+    echo "lspci -tv ####################"   >> ${FILEPCI}
+    ${LSPCI} -tv       >> ${FILEPCI}
+    echo "lspci -v ####################"    >> ${FILEPCI}
+    ${LSPCI} -v        >> ${FILEPCI}
+    echo "lspci -vv ####################"   >> ${FILEPCI}
+    ${LSPCI} -vv       >> ${FILEPCI}
+    cat-file /proc/pci    ${FILEPCI}
+    ${LSPCI} -x         > ${FILEPCI}-x
     
     > ${FILEALSA}
     cat-file /proc/asound/version ${FILEALSA}
@@ -101,18 +103,23 @@ function hardware-update () {
 
     > ${FILEHARDWARE}
     cat-file /proc/cpuinfo                ${FILEHARDWARE}
+    cat-file /proc/dma                    ${FILEHARDWARE}
+    cat-file /proc/interrupts             ${FILEHARDWARE}
+    cat-file /proc/iomem                  ${FILEHARDWARE}
+    cat-file /proc/ioports                ${FILEHARDWARE}
     cat-file /proc/device-tree/compatible ${FILEHARDWARE}
-    echo >> ${FILEHARDWARE}
+    echo                               >> ${FILEHARDWARE}
     cat-file /proc/device-tree/model      ${FILEHARDWARE}
-    echo >> ${FILEHARDWARE}
+    echo                               >> ${FILEHARDWARE}
     cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
-    echo >> ${FILEHARDWARE}
-    cat-file /proc/bus/input/devices     ${FILEHARDWARE}
-    cat-file /proc/bus/usb/devices       ${FILEHARDWARE}
-    cat-file /proc/ide/drivers           ${FILEHARDWARE}
-    cat-file /proc/ide/via         ${FILEHARDWARE}
-    cat-file /proc/ide/piix        ${FILEHARDWARE}
-    cat-file /proc/scsi/scsi       ${FILEHARDWARE}
+    echo                               >> ${FILEHARDWARE}
+    cat-file /proc/bus/input/devices      ${FILEHARDWARE}
+    cat-file /proc/bus/usb/devices        ${FILEHARDWARE}
+    cat-file /proc/bus/usb/drivers        ${FILEHARDWARE}
+    cat-file /proc/ide/drivers            ${FILEHARDWARE}
+    cat-file /proc/ide/via                ${FILEHARDWARE}
+    cat-file /proc/ide/piix               ${FILEHARDWARE}
+    cat-file /proc/scsi/scsi              ${FILEHARDWARE}
 
     > ${FILEHDPARM}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
@@ -130,23 +137,23 @@ function net-update () {
     IP=/sbin/ip
     
     > ${FILENET}
-    echo "ifconfig"     >> ${FILENET}
-    ${IFCONFIG}         >> ${FILENET}
-    echo "route"        >> ${FILENET}
-    ${ROUTE}            >> ${FILENET}
-    echo "route -A inet6" >> ${FILENET}
-    ${ROUTE} -A inet6   >> ${FILENET}
-    echo "ip link"      >> ${FILENET}
-    ${IP} link          >> ${FILENET}
-    echo "ip addr"      >> ${FILENET}
-    ${IP} addr          >> ${FILENET}
-    echo "ip addr"      >> ${FILENET}
-    ${IP} route         >> ${FILENET}
-    echo "ip -6 route"  >> ${FILENET}
-    ${IP} -6 route      >> ${FILENET}
-    echo "ip tunnel"    >> ${FILENET}
-    ${IP} tunnel        >> ${FILENET}
-    cat-file /proc/net/dev ${FILENET}
+    echo "ifconfig"        >> ${FILENET}
+    ${IFCONFIG}            >> ${FILENET}
+    echo "route"           >> ${FILENET}
+    ${ROUTE}               >> ${FILENET}
+    echo "route -A inet6"  >> ${FILENET}
+    ${ROUTE} -A inet6      >> ${FILENET}
+    echo "ip link"         >> ${FILENET}
+    ${IP} link             >> ${FILENET}
+    echo "ip addr"         >> ${FILENET}
+    ${IP} addr             >> ${FILENET}
+    echo "ip addr"         >> ${FILENET}
+    ${IP} route            >> ${FILENET}
+    echo "ip -6 route"     >> ${FILENET}
+    ${IP} -6 route         >> ${FILENET}
+    echo "ip tunnel"       >> ${FILENET}
+    ${IP} tunnel           >> ${FILENET}
+    cat-file /proc/net/dev    ${FILENET}
 }
 
 
