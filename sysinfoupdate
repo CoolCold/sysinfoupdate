@@ -19,7 +19,7 @@ function partition-update () {
     FILEFSTAB=${DIARIO}/fstab
 
     > ${FILEPART}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh cciss/c?d? ; do
 	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
     
@@ -61,23 +61,25 @@ function kernel-update () {
     ${LSMOD}             >> ${FILEKERNEL}
     echo                 >> ${FILEKERNEL}
     cat-file /proc/fb       ${FILEKERNEL}
+    cat-file /proc/lvm/global ${FILEKERNEL}
 }
 
 function hardware-update () {
     LSPCI=/usr/bin/lspci
+    HDPARM=/sbin/hdparm
     FILEPCI=${DIARIO}/pci-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
     
     > ${FILEPCI}
-    echo "lspci ####################"       >> ${FILEPCI}
+    echo "#################### lspci "       >> ${FILEPCI}
     ${LSPCI}           >> ${FILEPCI}
-    echo "lspci -tv ####################"   >> ${FILEPCI}
+    echo "#################### lspci -tv"   >> ${FILEPCI}
     ${LSPCI} -tv       >> ${FILEPCI}
-    echo "lspci -v ####################"    >> ${FILEPCI}
+    echo "#################### lspci -v"    >> ${FILEPCI}
     ${LSPCI} -v        >> ${FILEPCI}
-    echo "lspci -vv ####################"   >> ${FILEPCI}
+    echo "#################### lspci -vv"   >> ${FILEPCI}
     ${LSPCI} -vv       >> ${FILEPCI}
     cat-file /proc/pci    ${FILEPCI}
     ${LSPCI} -x         > ${FILEPCI}-x
@@ -109,12 +111,16 @@ function hardware-update () {
     cat-file /proc/ide/piix               ${FILEHARDWARE}
     cat-file /proc/ide/svwks              ${FILEHARDWARE}
     cat-file /proc/scsi/scsi              ${FILEHARDWARE}
+    cat-file /proc/driver/cciss/cciss0    ${FILEHARDWARE}
+    cat-file /proc/dri/0/name             ${FILEHARDWARE}
+    cat-file /proc/dri/0/mem              ${FILEHARDWARE}
+    
 
     > ${FILEHDPARM}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
-	hdparm    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	hdparm -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	hdparm -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh cciss/c?d? ; do
+	${HDPARM}    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
     
 }
