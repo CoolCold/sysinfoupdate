@@ -306,7 +306,6 @@ function hardware-update () {
     EEPROM=/usr/sbin/eeprom
     HWINFO=/usr/sbin/hwinfo
 
-
     echo -n "."
     > ${FILEPCI}
     echo "#################### lspci "      >> ${FILEPCI}
