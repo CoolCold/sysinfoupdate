@@ -91,6 +91,25 @@ function kernel-update () {
     cat-file /proc/sys/kernel/random/poolsize    ${FILEKERNEL}
 }
 
+function kernel-boot () {
+    FILEKERNELBOOT=${DIARIO}/kernel-boot
+    DMESG=/bin/dmesg
+    HEAD=/usr/bin/head
+    GREP=/bin/grep
+    MKTEMP=/bin/mktemp
+    CP=/bin/cp
+    
+    TMPFILE=`mktemp`
+    $DMESG > ${TMPFILE}
+    if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
+	${CP} ${TMPFILE} ${FILEKERNELBOOT}
+    else
+	echo "Could not find initial kernel boot message"
+	echo "See if /var/log/dmesg is better that dmesg alone"
+    fi
+}
+
+
 function hardware-update () {
     LSPCI=/usr/bin/lspci
     HDPARM=/sbin/hdparm
@@ -228,6 +247,7 @@ if [ -d ${DIARIO} ] ; then
     lvm-update
     md-update
     kernel-update
+    kernel-boot
     hardware-update
     net-update
 else
