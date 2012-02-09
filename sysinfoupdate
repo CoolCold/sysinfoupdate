@@ -114,6 +114,9 @@ function hardware-update () {
     cat-file /proc/scsi/scsi              ${FILEHARDWARE}
     cat-file /proc/driver/cciss/cciss0    ${FILEHARDWARE}
     cat-file /proc/scsi/3w-xxxx/0         ${FILEHARDWARE}
+    cat-file /proc/pmu/info               ${FILEHARDWARE}
+    cat-file /proc/pmu/interrupts         ${FILEHARDWARE}
+    cat-file /proc/pmu/options            ${FILEHARDWARE}
     cat-file /proc/dri/0/name             ${FILEHARDWARE}
     cat-file /proc/dri/0/mem              ${FILEHARDWARE}
     
