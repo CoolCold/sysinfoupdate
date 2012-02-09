@@ -88,6 +88,7 @@ function packages-list-update () {
 
 function partition-update () {
     FDISK=/sbin/fdisk
+    PARTED=/sbin/parted
     CP=/bin/cp
     DF=/bin/df
     FILEPART=${DIARIO}/part-list
@@ -99,6 +100,9 @@ function partition-update () {
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
 	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
+    echo -n "."
+    ${PARTED} -l >> ${FILEPART} 
+
     echo -n "."
     > ${FILEFS}
     echo "mounted partitions"           >> ${FILEFS}
