@@ -35,6 +35,15 @@ function lvm-update () {
     ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
 }
 
+function md-update () {
+    MDADM=/sbin/mdadm
+    FILEMD=${DIARIO}/md-list
+    > ${FILEMD}
+    
+    mdadm --detail /dev/md* >> ${FILEMD} 2>&1
+    cat-file /proc/mdstat      ${FILEMD}
+}
+
 # $1 - procfile
 # $2 - File to log
 function cat-file () {
@@ -62,6 +71,9 @@ function kernel-update () {
     echo                 >> ${FILEKERNEL}
     cat-file /proc/fb       ${FILEKERNEL}
     cat-file /proc/lvm/global ${FILEKERNEL}
+    echo "OpenAFS client" >> ${FILEKERNEL}
+    rxdebug localhost 7001 -version >> ${FILEKERNEL}
+    cmdebug localhost -cache >> ${FILEKERNEL}
 }
 
 function hardware-update () {
@@ -71,6 +83,8 @@ function hardware-update () {
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
+    HPADUCLI=/usr/sbin/hpaducli
+    HPASMCLI=/sbin/hpasmcli
     
     > ${FILEPCI}
     echo "#################### lspci "       >> ${FILEPCI}
@@ -113,6 +127,11 @@ function hardware-update () {
     cat-file /proc/ide/svwks              ${FILEHARDWARE}
     cat-file /proc/scsi/scsi              ${FILEHARDWARE}
     cat-file /proc/driver/cciss/cciss0    ${FILEHARDWARE}
+    cat-file /proc/driver/cciss/cciss1    ${FILEHARDWARE}
+    cat-file /proc/scsi/3w-xxxx/0         ${FILEHARDWARE}
+    cat-file /proc/pmu/info               ${FILEHARDWARE}
+    cat-file /proc/pmu/interrupts         ${FILEHARDWARE}
+    cat-file /proc/pmu/options            ${FILEHARDWARE}
     cat-file /proc/dri/0/name             ${FILEHARDWARE}
     cat-file /proc/dri/0/mem              ${FILEHARDWARE}
     
@@ -124,6 +143,9 @@ function hardware-update () {
 	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
     
+    ${HPADUCLI} -f ${DIARIO}/hpadu-report
+    ${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+
 }
 
 function net-update () {
@@ -157,6 +179,7 @@ if [ -d ${DIARIO} ] ; then
     packages-list-update
     partition-update
     lvm-update
+    md-update
     kernel-update
     hardware-update
     net-update
