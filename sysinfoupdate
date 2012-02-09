@@ -81,14 +81,14 @@ function kernel-update () {
     cat-file /proc/lvm/global  ${FILEKERNEL}
     cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
-    echo "OpenAFS client" >>   ${FILEKERNEL}
+    echo "OpenAFS client"           >> ${FILEKERNEL}
     rxdebug localhost 7001 -version >> ${FILEKERNEL}
-    cmdebug localhost -cache >> ${FILEKERNEL}
-    echo "/proc/sys"         >> ${FILEKERNEL}
-    cat-file /proc/sys/kernel/randomize_va_space ${FILEKERNEL}
-    cat-file /proc/sys/kernel/tainted            ${FILEKERNEL}
+    cmdebug localhost -cache        >> ${FILEKERNEL}
+    echo "/proc/sys"                >> ${FILEKERNEL}
+    cat-file /proc/sys/kernel/randomize_va_space   ${FILEKERNEL}
+    cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
-    cat-file /proc/sys/kernel/random/poolsize    ${FILEKERNEL}
+    cat-file /proc/sys/kernel/random/poolsize      ${FILEKERNEL}
 }
 
 function kernel-boot () {
@@ -143,38 +143,38 @@ function hardware-update () {
     cat-file /proc/asound/timers  ${FILEALSA}
 
     > ${FILEHARDWARE}
-    cat-file /proc/cpuinfo                ${FILEHARDWARE}
-    cat-file /proc/dma                    ${FILEHARDWARE}
-    cat-file /proc/interrupts             ${FILEHARDWARE}
-    cat-file /proc/iomem                  ${FILEHARDWARE}
-    cat-file /proc/ioports                ${FILEHARDWARE}
-    cat-file /proc/device-tree/compatible ${FILEHARDWARE}
-    echo                               >> ${FILEHARDWARE}
-    cat-file /proc/device-tree/model      ${FILEHARDWARE}
-    echo                               >> ${FILEHARDWARE}
+    cat-file /proc/cpuinfo                    ${FILEHARDWARE}
+    cat-file /proc/dma                        ${FILEHARDWARE}
+    cat-file /proc/interrupts                 ${FILEHARDWARE}
+    cat-file /proc/iomem                      ${FILEHARDWARE}
+    cat-file /proc/ioports                    ${FILEHARDWARE}
+    cat-file /proc/device-tree/compatible     ${FILEHARDWARE}
+    echo                                   >> ${FILEHARDWARE}
+    cat-file /proc/device-tree/model          ${FILEHARDWARE}
+    echo                                   >> ${FILEHARDWARE}
     cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
-    echo                               >> ${FILEHARDWARE}
-    cat-file /proc/bus/input/devices      ${FILEHARDWARE}
-    cat-file /proc/bus/input/handlers     ${FILEHARDWARE}
-    cat-file /proc/bus/ieee1394/devices   ${FILEHARDWARE}
-    cat-file /proc/bus/usb/devices        ${FILEHARDWARE}
-    cat-file /proc/bus/usb/drivers        ${FILEHARDWARE}
-    cat-file /proc/ide/drivers            ${FILEHARDWARE}
-    cat-file /proc/ide/via                ${FILEHARDWARE}
-    cat-file /proc/ide/piix               ${FILEHARDWARE}
-    cat-file /proc/ide/svwks              ${FILEHARDWARE}
-    cat-file /proc/scsi/scsi              ${FILEHARDWARE}
-    cat-file /proc/scsi/sg/version        ${FILEHARDWARE}
-    cat-file /proc/scsi/sg/devices        ${FILEHARDWARE}
-    cat-file /proc/scsi/sg/device_strs    ${FILEHARDWARE}
-    cat-file /proc/driver/cciss/cciss0    ${FILEHARDWARE}
-    cat-file /proc/driver/cciss/cciss1    ${FILEHARDWARE}
-    cat-file /proc/scsi/3w-xxxx/0         ${FILEHARDWARE}
-    cat-file /proc/pmu/info               ${FILEHARDWARE}
-    cat-file /proc/pmu/interrupts         ${FILEHARDWARE}
-    cat-file /proc/pmu/options            ${FILEHARDWARE}
-    cat-file /proc/dri/0/name             ${FILEHARDWARE}
-    cat-file /proc/dri/0/mem              ${FILEHARDWARE}
+    echo                                   >> ${FILEHARDWARE}
+    cat-file /proc/bus/input/devices          ${FILEHARDWARE}
+    cat-file /proc/bus/input/handlers         ${FILEHARDWARE}
+    cat-file /proc/bus/ieee1394/devices       ${FILEHARDWARE}
+    cat-file /proc/bus/usb/devices            ${FILEHARDWARE}
+    cat-file /proc/bus/usb/drivers            ${FILEHARDWARE}
+    cat-file /proc/ide/drivers                ${FILEHARDWARE}
+    cat-file /proc/ide/via                    ${FILEHARDWARE}
+    cat-file /proc/ide/piix                   ${FILEHARDWARE}
+    cat-file /proc/ide/svwks                  ${FILEHARDWARE}
+    cat-file /proc/scsi/scsi                  ${FILEHARDWARE}
+    cat-file /proc/scsi/sg/version            ${FILEHARDWARE}
+    cat-file /proc/scsi/sg/devices            ${FILEHARDWARE}
+    cat-file /proc/scsi/sg/device_strs        ${FILEHARDWARE}
+    cat-file /proc/driver/cciss/cciss0        ${FILEHARDWARE}
+    cat-file /proc/driver/cciss/cciss1        ${FILEHARDWARE}
+    cat-file /proc/scsi/3w-xxxx/0             ${FILEHARDWARE}
+    cat-file /proc/pmu/info                   ${FILEHARDWARE}
+    cat-file /proc/pmu/interrupts             ${FILEHARDWARE}
+    cat-file /proc/pmu/options                ${FILEHARDWARE}
+    cat-file /proc/dri/0/name                 ${FILEHARDWARE}
+    cat-file /proc/dri/0/mem                  ${FILEHARDWARE}
     
 
     > ${FILEHDPARM}
