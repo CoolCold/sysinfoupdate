@@ -101,7 +101,12 @@ function partition-update () {
 	${FDISK} -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
     echo -n "."
-    ${PARTED} -l >> ${FILEPART} 
+    if test -x ${PARTED} ; then
+	${PARTED} -l >> ${FILEPART}
+    else
+	echo 
+	echo "${PARTED} not found, please check or install parted"
+    fi
 
     echo -n "."
     > ${FILEFS}
@@ -140,10 +145,17 @@ function lvm-update () {
 	echo_execute ${FILELVM} ${DMSETUP} info
 	echo_execute ${FILELVM} ${DMSETUP} deps
 	echo_execute ${FILELVM} ${DMSETUP} table
+    else
+	echo
+	echo "${DMSETUP} not found, pelase install"
     fi
     if [ -x ${VGDISPLAY} ] ; then
 	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
+    else
+	echo
+	echo "LVM tools not found?, please check"
     fi
+
     if [ ! -x ${LVDISPLAY} -o ! -x ${PVDISPLAY} ] ; then
 	echo "$LVDISPLAY or $PVDISPLAY not available"
     else
@@ -160,6 +172,8 @@ function md-update () {
 
     echo -n "."
     if [ ! -x ${MDADM} ] ; then
+	echo
+	echo "${MDADM} not found, please install"
 	return
     fi
     ${MDADM} mdadm --detail /dev/md* >> ${FILEMD} 2>&1
@@ -192,6 +206,9 @@ function kernel-update () {
     echo 			>> ${FILEKERNEL}
     if [ -x ${LSMOD} ] ; then
 	${LSMOD}             >>    ${FILEKERNEL}
+    else
+	echo
+	echo "${LSMOD} not found, please check"
     fi
     echo                 >>    ${FILEKERNEL}
     cat-file /proc/fb          ${FILEKERNEL}
@@ -342,6 +359,9 @@ function hardware-update () {
 	${LSUSB}                            >> ${FILEUSB}
 	${LSUSB} -t                         >> ${FILEUSB} 2>&1
 	${LSUSB} -v                         >> ${FILEUSB}
+    else
+	echo
+	echo "${LSUSB} not found, please check"
     fi
 
     > ${FILEALSA}
