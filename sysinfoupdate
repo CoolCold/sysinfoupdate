@@ -512,9 +512,9 @@ function net-update () {
     
     echo -n "."
     > ${FILENET}
-    echo "ifconfig cleaned"			>> ${FILENET}
+    echo "ifconfig cleaned     $RANDOM"		>> ${FILENET}
     ${IFCONFIG} | grep -v TX | grep -v RX	>> ${FILENET}
-    echo "ifconfig"        >> ${FILENET}
+    echo "ifconfig             $RANDOM"         >> ${FILENET}
     ${IFCONFIG}            >> ${FILENET}
     # Get routing tables
     if [ $OSTYPE == "darwin8.0" ] ; then
@@ -522,14 +522,14 @@ function net-update () {
     else
 	echo "route"           >> ${FILENET}
 	${ROUTE}               >> ${FILENET}
-	echo "route -A inet6 cleaned"  >> ${FILENET}
+	echo "route -A inet6 cleaned     $RANDOM"  >> ${FILENET}
 	printf "%45s %40s %8s %8s %4s %4s %10s\n" "Destination" \
 	    "Next Hop" "Flags" "Metric" "Ref" "Use" "Iface" \
 	    >> ${FILENET}
 	${ROUTE} -A inet6 \
 	    | awk '{printf "%45s %40s %8s %8s XXXX XXXX %10s\n",$1,$2,$3,$4,$7}' \
 	    >> ${FILENET}
-	echo "route -A inet6"  >> ${FILENET}
+	echo "route -A inet6             $RANDOM"  >> ${FILENET}
 	${ROUTE} -A inet6      >> ${FILENET}
     fi
 
@@ -541,7 +541,7 @@ function net-update () {
 	${IP} addr             >> ${FILENET}
 	echo "ip addr"         >> ${FILENET}
 	${IP} route            >> ${FILENET}
-	echo "ip -6 route cleaned up"     >> ${FILENET}
+	echo "ip -6 route cleaned up $RANDOM"     >> ${FILENET}
 	# Updated for gisela on sarge 20070328
         # Updated for atena on 20070326 on etch
 	# Updated for afs06-unstable on 20070328 on etch
@@ -557,7 +557,7 @@ function net-update () {
 /^default.*dev [.[:alnum:]]+  metric/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " XXXX " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 " " $17 " " $18 " " $19 " " $20 " " $21 " " $22}\
 '\
 	    >> ${FILENET}
-	echo "ip -6 route"     >> ${FILENET}
+	echo "ip -6 route            $RANDOM"     >> ${FILENET}
 	${IP} -6 route         >> ${FILENET}
 	echo "ip tunnel"       >> ${FILENET}
 	${IP} tunnel           >> ${FILENET}
@@ -613,14 +613,14 @@ function services-update () {
 	"day" "second" "offset" "drift comp" "est error" "stab"\
 	"polling interval"\
 	>> ${FILESERVICES}
-    tail /var/log/ntpstats/loopstats \
+    tail -n 40 /var/log/ntpstats/loopstats \
 	| awk '{printf "%5s  %10s  %14s  %10s  %14s  %10s  %4s\n",$1,$2,$3,$4,$5,$6,$7}' \
         >> ${FILESERVICES}
     FRMT="%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n"
     printf "$FRMT"\
 	"day" "second" "address" "stat" "offset" "delay" "dispersion"\
 	"skew (variance)" >> ${FILESERVICES}
-    cat /var/log/ntpstats/peerstats \
+    tail -n 40 /var/log/ntpstats/peerstats \
 	| awk '{printf "%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n",$1,$2,$3,$4,$5,$6,$7,$8}' \
 	>> ${FILESERVICES}
 }
