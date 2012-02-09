@@ -111,11 +111,11 @@ function partition-update () {
 
     echo -n "."
     > ${FILEPART}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
-	if test -r /dev/${disk} ; then
-	    echo_execute ${FILEPART} ${FDISK} -l /dev/${disk} 2> /dev/null
-	    echo_execute ${FILEPART} ${GDISK} -l /dev/${disk}
-	    echo_execute ${FILEPART} ${PARTED} /dev/${disk} print unit s print
+    for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+	if test -r ${disk} ; then
+	    echo_execute ${FILEPART} ${FDISK} -l ${disk} 2> /dev/null
+	    echo_execute ${FILEPART} ${GDISK} -l ${disk}
+	    echo_execute ${FILEPART} ${PARTED} ${disk} print unit s print
 	fi
     done
     echo -n "."
