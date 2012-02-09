@@ -101,7 +101,12 @@ function partition-update () {
 	${FDISK} -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
     echo -n "."
-    ${PARTED} -l >> ${FILEPART} 
+    if test -x ${PARTED} ; then
+	${PARTED} -l >> ${FILEPART}
+    else
+	echo 
+	echo "${PARTED} not found, please check or install parted"
+    fi
 
     echo -n "."
     > ${FILEFS}
@@ -144,6 +149,7 @@ function lvm-update () {
     if [ -x ${VGDISPLAY} ] ; then
 	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
     fi
+
     if [ ! -x ${LVDISPLAY} -o ! -x ${PVDISPLAY} ] ; then
 	echo "$LVDISPLAY or $PVDISPLAY not available"
     else
@@ -234,6 +240,7 @@ function kernel-update () {
     cat-file /proc/sys/vm/stat_interval            ${FILEKERNEL}
     cat-file /proc/sys/vm/mmap_min_addr            ${FILEKERNEL}
     cat-file /proc/sys/vm/highmem_is_dirtyable     ${FILEKERNEL}
+
     echo "OpenAFS client"               >> ${FILEKERNEL}
     if [ -x ${AFSD1} ] ; then
 	strings ${AFSD1} | grep built   >> ${FILEKERNEL}
