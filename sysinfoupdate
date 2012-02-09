@@ -94,7 +94,7 @@ function packages-list-update () {
 	update-java-alternatives -l >> "${FILE}"
 	echo >> "${FILE}"
 	echo "Contents of /etc/alternatives" >> "${FILE}"
-	ls -alF /etc/alternatives >> "${FILE}"
+	ls -alF --time-style=+ /etc/alternatives >> "${FILE}"
     fi
 
 }
