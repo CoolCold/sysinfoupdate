@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 21:34:04 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 21:35:01 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2160 $ Calhariz
+# $Revision: 2161 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2160 $ Calhariz'
+VERSION=' $Revision: 2161 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -798,6 +798,7 @@ function hpacucli-update-7.85 () {
 function hpacucli-update-generic () {
 #     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
+    FILEHPACUCLIDIAG=${DIARIO}/hpacucli-diag-report
     TMPDIR=`${MKTEMPDIR}`
 
     echo -n "."
@@ -810,6 +811,9 @@ function hpacucli-update-generic () {
     V1=`echo $V | cut -d . -f 1`
     V2=`echo $V | cut -d . -f 2`
     V3=`echo $V | cut -d . -f 3`
+
+    > ${FILEHPACUCLIDIAG}
+    ${HPACUCLI} controller all diag file=${FILEHPACUCLIDIAG}
 
     > ${FILEHPACUCLI}
     echo "upacucli version detected $V => $V1 $V2 $V3" >> ${FILEHPACUCLI}
