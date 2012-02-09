@@ -4,24 +4,12 @@
 DIARIO=${HOME}/diario/
 
 function packages-list-update () {
-    case $HOSTNAME in
-	picard|data|bcksrv|calhariz-mac-adm|natasha.local|portatil-calhariz-adm.tagus.ist.utl.pt|mariana|backup)
-	    FILE="${DIARIO}/packages-list"
-	    if [ -f "${FILE}" ] ; then
-		COLUMNS=132 dpkg --list > "${FILE}"
-	    else
-		echo "Nao existe o ficheiro ${FILE}"
-	    fi
-	    ;;
-	*)
-	    if [ -d "${DIARIO}" ] ; then
-		FILE="${DIARIO}/packages-list"
-		if [ -f "${FILE}" ] ; then
-		    COLUMNS=132 dpkg --list > "${FILE}"
-		fi
-	    fi
-	    ;;
-    esac
+    FILE="${DIARIO}/packages-list"
+
+    if [ -d "${DIARIO}" ] ; then
+	COLUMNS=132 dpkg --list > "${FILE}"
+    fi
+
 }
 
 function partition-update () {
@@ -119,6 +107,7 @@ function hardware-update () {
     cat-file /proc/ide/drivers            ${FILEHARDWARE}
     cat-file /proc/ide/via                ${FILEHARDWARE}
     cat-file /proc/ide/piix               ${FILEHARDWARE}
+    cat-file /proc/ide/svwks              ${FILEHARDWARE}
     cat-file /proc/scsi/scsi              ${FILEHARDWARE}
 
     > ${FILEHDPARM}
