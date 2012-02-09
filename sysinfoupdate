@@ -115,6 +115,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
+	echo "$0 $Revision: 1701 $" >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
 	cat-file /etc/issue.net      "${FILE}"
