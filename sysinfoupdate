@@ -117,9 +117,14 @@ function hardware-update () {
     done
     
 }
-packages-list-update
-partition-update
-lvm-update
-kernel-update
-hardware-update
+
+if [ -d ${DIARIO} ] ; then
+    packages-list-update
+    partition-update
+    lvm-update
+    kernel-update
+    hardware-update
+else
+    echo "Don't exist ${DIARIO} directory, not running"
+fi
 
