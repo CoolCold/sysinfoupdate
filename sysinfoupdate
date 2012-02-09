@@ -588,7 +588,6 @@ function hardware-update () {
  	    echo_execute ${FILEHDPARM} ${HDPARM}    ${disk}
  	    echo_execute ${FILEHDPARM} ${HDPARM} -i ${disk}
  	    echo_execute ${FILEHDPARM} ${HDPARM} -I ${disk}
- 	    sleep 1
  	    echo_execute ${FILEHDPARM} ${HDPARMSPEED} ${disk}
  	    echo_execute ${FILEHDPARM} ${SDPARM} --all                  ${disk}
  	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long           ${disk}
@@ -1063,18 +1062,19 @@ if [ -d ${DIARIO} ] ; then
     echo -n "Updating "
     date
     ipmi-update &
-    date
     hpacucli-update &
-    date
     packages-list-update
     date
     partition-update &
-    date
     lvm-update
     date
     md-update
     date
     kernel-boot
+    date
+    echo -n "Waiting for demanding tasks"
+    wait
+    echo -n " Done "
     date
     hardware-update
     date
@@ -1091,9 +1091,9 @@ if [ -d ${DIARIO} ] ; then
     date
     kernel-update
     date
-    echo "Waiting for slow tasks"
+    echo -n "Waiting for slow tasks"
     wait
-    echo " Done"
+    echo " Done "
     date
 else
     echo "Don't exist ${DIARIO} directory, not running"
