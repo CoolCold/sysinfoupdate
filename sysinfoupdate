@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-01-05 16:15:43 +0000 (Qua, 05 Jan 2011) $
+# $Date: 2011-03-29 18:45:25 +0100 (Ter, 29 Mar 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4657 $
+# $Revision: 4787 $
 
 
 
@@ -126,7 +126,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4657 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4787 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -1076,9 +1076,7 @@ function services-update () {
 if [ -d ${DIARIO} ] ; then
     echo -n "Updating "
     date
-    ipmi-update &
     hpacucli-update &
-    packages-list-update
     date
     partition-update &
     lvm-update
@@ -1091,10 +1089,13 @@ if [ -d ${DIARIO} ] ; then
     wait
     echo -n " Done "
     date
+    packages-list-update 
+    date
     hardware-update
     date
     video-update
     date
+    ipmi-update 
 
 
     date
