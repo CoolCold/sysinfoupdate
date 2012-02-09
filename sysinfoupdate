@@ -506,6 +506,9 @@ function hardware-update () {
 
     echo "#################### get-edid | parse-edid "      >> ${FILEPCI}
     ${GETEDID} | ${PARSEEDID}                               >> ${FILEHARDWARE}
+    if test -r /var/log/Xorg.0.log ; then
+	cp /var/log/Xorg.0.log ${DIARIO}
+    fi
 }
 
 
