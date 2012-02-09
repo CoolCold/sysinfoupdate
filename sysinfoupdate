@@ -201,21 +201,6 @@ function kernel-update () {
     cat-file /proc/filesystems ${FILEKERNEL}
     cat-file /proc/sys/fs/nr_open          ${FILEKERNEL}
 
-    echo "OpenAFS client"               >> ${FILEKERNEL}
-    if [ -x ${AFSD1} ] ; then
-	strings ${AFSD1} | grep built   >> ${FILEKERNEL}
-    fi
-    if [ -x ${AFSD2} ] ; then
-	strings ${AFSD2} | grep built   >> ${FILEKERNEL}
-    fi
-    echo "OpenAFS modules"              >> ${FILEKERNEL}
-    if rxdebug > /dev/null 2>&1; then
-	rxdebug localhost 7001 -version >> ${FILEKERNEL}
-    fi
-    echo "OpenAFS cache settings"       >> ${FILEKERNEL}
-    if cmdebug > /dev/null 2>&1; then
-	cmdebug localhost -cache        >> ${FILEKERNEL}
-    fi
     echo "/proc/sys"                            >> ${FILEKERNEL}
     cat-file /proc/sys/dev/cdrom/info              ${FILEKERNEL}
     cat-file /proc/sys/kernel/core_pattern         ${FILEKERNEL}
@@ -234,6 +219,22 @@ function kernel-update () {
     cat-file /proc/sys/vm/nr_hugepages             ${FILEKERNEL}
     cat-file /proc/sys/vm/nr_overcommit_hugepages  ${FILEKERNEL}
     cat-file /proc/sys/vm/stat_interval            ${FILEKERNEL}
+
+    echo "OpenAFS client"               >> ${FILEKERNEL}
+    if [ -x ${AFSD1} ] ; then
+	strings ${AFSD1} | grep built   >> ${FILEKERNEL}
+    fi
+    if [ -x ${AFSD2} ] ; then
+	strings ${AFSD2} | grep built   >> ${FILEKERNEL}
+    fi
+    echo "OpenAFS modules"              >> ${FILEKERNEL}
+    if rxdebug > /dev/null 2>&1; then
+	rxdebug localhost 7001 -version >> ${FILEKERNEL}
+    fi
+    echo "OpenAFS cache settings"       >> ${FILEKERNEL}
+    if cmdebug > /dev/null 2>&1; then
+	cmdebug localhost -cache        >> ${FILEKERNEL}
+    fi
 }
 
 function kernel-boot () {
@@ -762,7 +763,6 @@ if [ -d ${DIARIO} ] ; then
     partition-update
     lvm-update
     md-update
-    kernel-update
     kernel-boot
     hardware-update
     ipmi-update
@@ -770,6 +770,7 @@ if [ -d ${DIARIO} ] ; then
     twcli-update
     net-update
     services-update
+    kernel-update
     echo " Done"
 else
     echo "Don't exist ${DIARIO} directory, not running"
