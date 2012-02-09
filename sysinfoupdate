@@ -112,8 +112,7 @@ function partition-update () {
     done
     echo -n "."
     if test -x ${PARTED} ; then
-	time ${PARTED} -l >> ${FILEPART}
-	echo "parted -l"
+	${PARTED} -l >> ${FILEPART}
     else
 	echo 
 	echo "${PARTED} not found, please check or install parted"
