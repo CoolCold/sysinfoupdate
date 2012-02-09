@@ -83,12 +83,16 @@ function packages-list-update () {
 	> "${FILE}"
 	cat /etc/issue /etc/issue.net >> "${FILE}"
 	echo "deb packages installed" >> "${FILE}"
+	echo >> "${FILE}"
 	COLUMNS=256 dpkg --list | cut -f 1-3 -d ' ' >> "${FILE}"
 	COLUMNS=175 dpkg --list >> "${FILE}"
+	echo >> "${FILE}"
 	echo "rpm packages installed" >> "${FILE}"
 	rpm -q -a >> "${FILE}" 2>&1
+	echo >> "${FILE}"
 	echo "Java alternatives" >> "${FILE}"
 	update-java-alternatives -l >> "${FILE}"
+	echo >> "${FILE}"
 	echo "Contents of /etc/alternatives" >> "${FILE}"
 	ls -alF /etc/alternatives >> "${FILE}"
     fi
