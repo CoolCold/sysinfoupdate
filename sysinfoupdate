@@ -64,6 +64,7 @@ function packages-list-update () {
 	echo -n "."
 	> "${FILE}"
 	echo "deb packages installed" >> "${FILE}"
+	COLUMNS=256 dpkg --list | cut -f 1-3 -d ' ' >> "${FILE}"
 	COLUMNS=132 dpkg --list >> "${FILE}"
 	echo "rpm packages installed" >> "${FILE}"
 	rpm -q -a >> "${FILE}" 2>&1
@@ -329,9 +330,9 @@ function hardware-update () {
     cat-file /proc/pmu/info                   ${FILEHARDWARE}
     cat-file /proc/pmu/options                ${FILEHARDWARE}
 
-    cat-file /proc/acpi/alarm                  ${FILEHARDWARE}
-    cat-file /proc/acpi/info                   ${FILEHARDWARE}
-    cat-file /proc/acpi/button/power/PWRF/info ${FILEHARDWARE}
+    cat-file /proc/acpi/alarm			${FILEHARDWARE}
+    cat-file /proc/acpi/info			${FILEHARDWARE}
+    cat-file /proc/acpi/button/power/PWRF/info	${FILEHARDWARE}
     
     if [ -d /proc/acpi/processor/CPU0 ] ; then
        pushd /proc/acpi/processor > /dev/null 
