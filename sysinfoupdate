@@ -396,6 +396,7 @@ function hardware-update () {
     cat-file /proc/pmu/options                ${FILEHARDWARE}
 
     cat-file /proc/acpi/alarm			${FILEHARDWARE}
+    cat-file /proc/acpi/fan/FAN/state           ${FILEHARDWARE}
     cat-file /proc/acpi/info			${FILEHARDWARE}
 #   Not a usefull sourve for information
 #    cat-file /proc/acpi/event			${FILEHARDWARE}
