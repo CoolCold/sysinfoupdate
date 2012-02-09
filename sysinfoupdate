@@ -4,15 +4,18 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-01-05 16:16:16 +0000 (Qua, 05 Jan 2011) $
+# $Date: 2011-12-17 19:44:21 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 1709 $
+# $Revision: 2156 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
+VERSION=' $Revision: 2156 $ Calhariz'
+
+echo "$PROG" "$VERSION"
 
 # Define VARS to call commands
 WHICH=`which which`
@@ -126,7 +129,8 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 1709 $ picard' >> "${FILE}"
+	echo "$PROG" "$VERSION"           >> "${FILE}"
+
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
