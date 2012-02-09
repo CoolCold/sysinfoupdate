@@ -57,6 +57,20 @@ function cat-file () {
     echo >> $2
 }
 
+# $1 - output file
+# $2 - command to execute
+# $3 - options to the command
+function echo_execute () {
+    OUTPUT=$1
+    shift
+    NAME=`basename $1`
+    COMMAND=$1
+    shift
+    echo $NAME $* >> ${OUTPUT}
+    $COMMAND $* >> ${OUTPUT}
+    echo >> ${OUTPUT}
+}
+
 function packages-list-update () {
     FILE="${DIARIO}/packages-list"
 
