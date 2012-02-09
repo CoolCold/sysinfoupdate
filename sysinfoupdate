@@ -871,6 +871,7 @@ function net-update () {
     IFCONFIG=/sbin/ifconfig
     ROUTE=/sbin/route
     IP=/sbin/ip
+    NETSTAT=/bin/netstat
     
     echo -n "."
     > ${FILENET}
@@ -939,6 +940,15 @@ function net-update () {
 	echo "ip tunnel"       >> ${FILENET}
 	${IP} tunnel           >> ${FILENET}
     fi
+    echo >> ${FILENET}
+    echo "${NETSTAT} information" >> ${FILENET}
+    echo_execute ${FILENET} ${NETSTAT} -nap
+    echo_execute ${FILENET} ${NETSTAT} -nap -e -e -o
+    echo_execute ${FILENET} ${NETSTAT} -ng
+    echo_execute ${FILENET} ${NETSTAT} -i
+    echo_execute ${FILENET} ${NETSTAT} -i -a
+    echo_execute ${FILENET} ${NETSTAT} -M
+    echo_execute ${FILENET} ${NETSTAT} -s
     cat-file /proc/net/dev         ${FILENET}
     cat-file /proc/net/dev_mcast   ${FILENET}
     cat-file /proc/net/protocols   ${FILENET}
