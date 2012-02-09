@@ -384,7 +384,7 @@ function hardware-update () {
     fi
 
     if [ -d /sys/devices/system/cpu ] ; then
-       for cpu in /sys/devices/system/cpu* ; do
+       for cpu in /sys/devices/system/cpu/cpu* ; do
            if [ -d ${cpu}/cpufreq ] ; then
                for file in ${cpu}/cpufreq/* ; do
                    if [ -f "${file}" ] ; then
