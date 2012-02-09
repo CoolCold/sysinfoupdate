@@ -198,6 +198,7 @@ function kernel-update () {
     cat-file /proc/cmdline     ${FILEKERNEL}
     cat-file /proc/crypto      ${FILEKERNEL}
     cat-file /proc/devices     ${FILEKERNEL}
+    cat-file /proc/cgroups     ${FILEKERNEL}
 
     printf "%20s   %s\n" "Modules" "Used by"		 >> ${FILEKERNEL}
     if [ -r /proc/modules ] ; then
@@ -226,6 +227,7 @@ function kernel-update () {
 
     cat-file /proc/meminfo     ${FILEKERNEL}
     cat-file /proc/mtrr        ${FILEKERNEL}
+    cat-file /proc/pagetypeinfo                    ${FILEKERNEL}
     cat-file /proc/lvm/global  ${FILEKERNEL}
     cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
@@ -233,6 +235,7 @@ function kernel-update () {
 
     echo "/proc/sys"                            >> ${FILEKERNEL}
     cat-file /proc/sys/dev/cdrom/info              ${FILEKERNEL}
+    cat-file /proc/sys/dev/mac_hid/mouse_button_emulation        ${FILEKERNEL}
     cat-file /proc/sys/kernel/core_pattern         ${FILEKERNEL}
     cat-file /proc/sys/kernel/core_uses_pid        ${FILEKERNEL}
     cat-file /proc/sys/kernel/randomize_va_space   ${FILEKERNEL}
@@ -244,6 +247,8 @@ function kernel-update () {
     cat-file /proc/sys/kernel/kstack_depth_to_print ${FILEKERNEL}
     cat-file /proc/sys/kernel/poweroff_cmd         ${FILEKERNEL}
     cat-file /proc/sys/kernel/hung_task_timeout_secs            ${FILEKERNEL}
+    cat-file /proc/sys/kernel/print-fatal-signals  ${FILEKERNEL}
+    cat-file /proc/sys/kernel/softlockup_thresh    ${FILEKERNEL}
     cat-file /proc/sys/vm/laptop_mode              ${FILEKERNEL}
     cat-file /proc/sys/vm/panic_on_oom             ${FILEKERNEL}
     cat-file /proc/sys/vm/vdso_enabled             ${FILEKERNEL}
@@ -897,6 +902,7 @@ function net-update () {
     cat-file /proc/net/dev         ${FILENET}
     cat-file /proc/net/dev_mcast   ${FILENET}
     cat-file /proc/net/protocols   ${FILENET}
+    cat-file /proc/sys/net/core/warnings                    ${FILENET}
     cat-file /proc/sys/net/ipv4/tcp_available_congestion_control   ${FILENET}
     cat-file /proc/sys/net/ipv4/tcp_allowed_congestion_control     ${FILENET}
     cat-file /proc/sys/net/ipv4/ip_forward                  ${FILENET}
