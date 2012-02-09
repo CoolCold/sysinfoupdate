@@ -287,6 +287,7 @@ function hardware-update () {
     cat-file /proc/bus/usb/devices            ${FILEHARDWARE}
     cat-file /proc/bus/usb/drivers            ${FILEHARDWARE}
     cat-file /proc/ide/drivers                ${FILEHARDWARE}
+    cat-file /proc/ide/amd74xx                ${FILEHARDWARE}
     cat-file /proc/ide/via                    ${FILEHARDWARE}
     cat-file /proc/ide/piix                   ${FILEHARDWARE}
     cat-file /proc/ide/svwks                  ${FILEHARDWARE}
