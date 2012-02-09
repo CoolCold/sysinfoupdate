@@ -303,6 +303,8 @@ function hardware-update () {
     cat-file /proc/pmu/options                ${FILEHARDWARE}
     cat-file /proc/dri/0/name                 ${FILEHARDWARE}
     cat-file /proc/dri/0/mem                  ${FILEHARDWARE}
+    cat-file /proc/mpt/version                ${FILEHARDWARE}
+    cat-file /proc/mpt/summary                ${FILEHARDWARE}
     
 
     > ${FILEHDPARM}
