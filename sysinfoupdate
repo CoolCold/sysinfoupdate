@@ -287,6 +287,7 @@ function hardware-update () {
     cat-file /proc/bus/usb/devices            ${FILEHARDWARE}
     cat-file /proc/bus/usb/drivers            ${FILEHARDWARE}
     cat-file /proc/ide/drivers                ${FILEHARDWARE}
+    cat-file /proc/ide/amd74xx                ${FILEHARDWARE}
     cat-file /proc/ide/via                    ${FILEHARDWARE}
     cat-file /proc/ide/piix                   ${FILEHARDWARE}
     cat-file /proc/ide/svwks                  ${FILEHARDWARE}
@@ -302,7 +303,24 @@ function hardware-update () {
     cat-file /proc/pmu/options                ${FILEHARDWARE}
     cat-file /proc/dri/0/name                 ${FILEHARDWARE}
     cat-file /proc/dri/0/mem                  ${FILEHARDWARE}
+    cat-file /proc/mpt/version                ${FILEHARDWARE}
+    cat-file /proc/mpt/summary                ${FILEHARDWARE}
     
+    echo "Power management"                >> ${FILEHARDWARE}
+    cat-file /proc/apm				${FILEHARDWARE}
+    cat-file /proc/pmu/battery_0              ${FILEHARDWARE}
+    cat-file /proc/pmu/info                   ${FILEHARDWARE}
+    cat-file /proc/pmu/options                ${FILEHARDWARE}
+
+    pushd /sys/devices/system/cpu > /dev/null
+    for cpu in cpu* ; do
+	pushd ${cpu}/cpufreq > /dev/null
+	for file in * ; do
+	    if [ -f "${file}" ] ; then
+		cat-file /sys/devices/system/cpu/${cpu}/cpufreq/${file}		${FILEHARDWARE}
+	    fi
+	done
+    done
 
     > ${FILEHDPARM}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
