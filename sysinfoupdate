@@ -307,6 +307,7 @@ function hardware-update () {
     cat-file /proc/mpt/summary                ${FILEHARDWARE}
     
     echo "Power management"                >> ${FILEHARDWARE}
+    cat-file /proc/apm				${FILEHARDWARE}
     cat-file /proc/pmu/battery_0              ${FILEHARDWARE}
     cat-file /proc/pmu/info                   ${FILEHARDWARE}
     cat-file /proc/pmu/options                ${FILEHARDWARE}
