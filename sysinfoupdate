@@ -85,7 +85,8 @@ function kernel-update () {
     CAT=/bin/cat
     LSMOD=/sbin/lsmod
     FREE=/usr/bin/free
-    AFSD=/usr/sbin/afsd
+    AFSD1=/usr/sbin/afsd
+    AFSD2=/sbin/afsd
 
     echo -n "."
     >${FILEKERNEL}
@@ -107,8 +108,11 @@ function kernel-update () {
     cat-file /proc/filesystems ${FILEKERNEL}
 
     echo "OpenAFS client"               >> ${FILEKERNEL}
-    if [ -x ${AFSD} ] ; then
-	strings ${AFSD} | grep built    >> ${FILEKERNEL}
+    if [ -x ${AFSD1} ] ; then
+	strings ${AFSD1} | grep built   >> ${FILEKERNEL}
+    fi
+    if [ -x ${AFSD2} ] ; then
+	strings ${AFSD2} | grep built   >> ${FILEKERNEL}
     fi
     echo "OpenAFS modules"              >> ${FILEKERNEL}
     if which rxdebug > /dev/null ; then
