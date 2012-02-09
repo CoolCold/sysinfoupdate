@@ -520,6 +520,42 @@ function hpacucli-update-7.6 () {
 }
 
 
+function twcli-update () {
+    FILETWCLI=${DIARIO}/twcli-report
+    
+
+    if test -x /usr/sbin/tw_cli ; then
+	TWCLI=/usr/sbin/tw_cli
+    else
+	TWCLI=twcli
+    fi
+
+    if ! which ${TWCLI} > /dev/null ; then
+	return
+    fi
+
+    > ${FILETWCLI}
+    echo "tw_cli show ver"                          >> ${FILETWCLI}
+    ${TWCLI} show ver                               >> ${FILETWCLI}
+    echo "tw_cli show"                              >> ${FILETWCLI}
+    ${TWCLI} show                                   >> ${FILETWCLI}
+    echo "tw_cli show alarms"                       >> ${FILETWCLI}
+    ${TWCLI} show alarms                            >> ${FILETWCLI}
+    echo "tw_cli show diag"                         >> ${FILETWCLI}
+    ${TWCLI} show diag                              >> ${FILETWCLI}
+    echo "tw_cli show rebuild"                      >> ${FILETWCLI}
+    ${TWCLI} show rebuild                           >> ${FILETWCLI}
+    echo "tw_cli show verify"                       >> ${FILETWCLI}
+    ${TWCLI} show verify                            >> ${FILETWCLI}
+    echo "tw_cli show selftest"                     >> ${FILETWCLI}
+    ${TWCLI} show selftest                          >> ${FILETWCLI}
+
+    for ctrl in `tw_cli show | egrep "^c[0-9] " | cut -f 1 -d ' '` ; do
+	echo "tw_cli /$ctrl show all"               >> ${FILETWCLI}
+	${TWCLI} /$ctrl show all                    >> ${FILETWCLI}
+    done
+    echo -n "."
+}
 
 
 function net-update () {
@@ -654,6 +690,7 @@ if [ -d ${DIARIO} ] ; then
     kernel-boot
     hardware-update
     hpacucli-update-7.6
+    twcli-update
     net-update
     services-update
     echo " Done"
