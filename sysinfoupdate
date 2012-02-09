@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 21:38:23 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 21:49:54 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2162 $ Calhariz
+# $Revision: 2163 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2162 $ Calhariz'
+VERSION=' $Revision: 2163 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -396,27 +396,13 @@ function kernel-boot () {
 
 function hardware-update () {
 #     LSUSB=/usr/bin/lsusb
-#     HDPARM=/sbin/hdparm
 #     SDPARM=/usr/bin/sdparm
     FILEPCI=${DIARIO}/pci-list
     FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
-    FILEHDPARM=${DIARIO}/hdparm-list
-    FILEHWINFO=${DIARIO}/hwinfo-list
-#     HPADUCLI=/usr/sbin/hpaducli
-#     HPASMCLI=/sbin/hpasmcli
 #     PRTCONF=/usr/sbin/prtconf
 #     EEPROM=/usr/sbin/eeprom
-#     HWINFO=/usr/sbin/hwinfo
-
-    HDPARMSPEED="${HDPARM} -tT"
-    if test -x /usr/bin/nice ; then
-	HDPARMSPEED="/usr/bin/nice --20 $HDPARMSPEED"
-    fi
-    if test -x /usr/bin/ionice ; then
-	HDPARMSPEED="/usr/bin/ionice -c 1 $HDPARMSPEED"
-    fi
 
     echo -n "."
     > ${FILEPCI}
@@ -592,6 +578,30 @@ function hardware-update () {
        fi
     done
 
+    if [ -x $PRTCONF ] ; then
+	echo_execute ${FILEHARDWARE} $PRTCONF ""
+	echo                        >> ${FILEHARDWARE}
+	echo_execute ${FILEHARDWARE} $PRTCONF -p 
+    fi
+
+    if [ -x $EEPROM ] ; then
+	echo_execute ${FILEHARDWARE} $EEPROM ""
+    fi
+
+}
+
+function hdparm-update () {
+#     HDPARM=/sbin/hdparm
+    FILEHDPARM=${DIARIO}/hdparm-list
+
+    HDPARMSPEED="${HDPARM} -tT"
+    if test -x /usr/bin/nice ; then
+	HDPARMSPEED="/usr/bin/nice --20 $HDPARMSPEED"
+    fi
+    if test -x /usr/bin/ionice ; then
+	HDPARMSPEED="/usr/bin/ionice -c 1 $HDPARMSPEED"
+    fi
+
     #set -x
     > ${FILEHDPARM}
     for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
@@ -608,13 +618,39 @@ function hardware-update () {
  	    echo_execute ${FILEHDPARM} ${HDPARM}    ${disk}
  	    echo_execute ${FILEHDPARM} ${HDPARM} -i ${disk}
  	    echo_execute ${FILEHDPARM} ${HDPARM} -I ${disk}
+	    sleep 1
  	    echo_execute ${FILEHDPARM} ${HDPARMSPEED} ${disk}
+# 	    echo_execute ${FILEHDPARM} ${SDPARM} --all                  ${disk}
+# 	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long           ${disk}
+# 	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long --verbose ${disk}
+	fi
+    done
+    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
+	if test -r ${disk} ; then
+	    echo -n " " ${disk} " "
+# 	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
+# 	${HDPARM} -i ${disk} >> ${FILEHDPARM}        2> /dev/null
+# 	${HDPARM} -I ${disk} >> ${FILEHDPARM}        2> /dev/null
+# 	sleep 1
+# 	${HDPARMSPEED} ${disk} >> ${FILEHDPARM}      2> /dev/null
+# 	${SDPARM} --all                  ${disk} >> ${FILEHDPARM} 2> /dev/null
+# 	${SDPARM} --all --long           ${disk} >> ${FILEHDPARM} 2> /dev/null
+# 	${SDPARM} --all --long --verbose ${disk} >> ${FILEHDPARM} 2> /dev/null
+# 	    echo_execute ${FILEHDPARM} ${HDPARM}    ${disk}
+# 	    echo_execute ${FILEHDPARM} ${HDPARM} -i ${disk}
+# 	    echo_execute ${FILEHDPARM} ${HDPARM} -I ${disk}
+# 	    echo_execute ${FILEHDPARM} ${HDPARMSPEED} ${disk}
  	    echo_execute ${FILEHDPARM} ${SDPARM} --all                  ${disk}
  	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long           ${disk}
  	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long --verbose ${disk}
 	fi
     done
     #set +x
+}
+
+function hp-hardware-update () {
+#     HPADUCLI=/usr/sbin/hpaducli
+#     HPASMCLI=/sbin/hpasmcli
 
     if [ -x ${HPADUCLI} ] ; then
 	${HPADUCLI} -f ${DIARIO}/hpadu-report
@@ -622,16 +658,11 @@ function hardware-update () {
     if [ -x ${HPASMCLI} ] ;then
 	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
     fi
+}
 
-    if [ -x $PRTCONF ] ; then
-	echo_execute ${FILEHARDWARE} $PRTCONF ""
-	echo                        >> ${FILEHARDWARE}
-	echo_execute ${FILEHARDWARE} $PRTCONF -p 
-    fi
-
-    if [ -x $EEPROM ] ; then
-	echo_execute ${FILEHARDWARE} $EEPROM ""
-    fi
+function hwinfo-update () {
+    FILEHWINFO=${DIARIO}/hwinfo-list
+#     HWINFO=/usr/sbin/hwinfo
 
     echo -n "."
     > ${FILEHWINFO}
@@ -1110,6 +1141,9 @@ if [ -d ${DIARIO} ] ; then
     md-update
     kernel-boot
     hardware-update
+    hdparm-update
+    hp-hardware-update
+    hwinfo-update
     video-update
     ipmi-update
     hpacucli-update
