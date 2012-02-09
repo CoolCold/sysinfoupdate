@@ -3,6 +3,20 @@
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 
+# $1 - procfile
+# $2 - File to log
+function cat-file () {
+    CAT=/bin/cat
+
+    echo $1 >> $2
+    if [ -e $1 ] ; then
+	${CAT} $1 >> $2
+    else
+	echo "$1 don't exist" >> $2
+    fi
+    echo >> $2
+}
+
 function packages-list-update () {
     FILE="${DIARIO}/packages-list"
 
@@ -31,7 +45,7 @@ function lvm-update () {
     FILELVM=${DIARIO}/lvm-list
     > ${FILELVM}
 
-    ${VGDISPLAY} --short >> ${FILELVM} 2>&1
+    ${VGDISPLAY} --short   >> ${FILELVM} 2>&1
     ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
 }
 
@@ -44,20 +58,6 @@ function md-update () {
     cat-file /proc/mdstat      ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_max ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_min ${FILEMD}
-}
-
-# $1 - procfile
-# $2 - File to log
-function cat-file () {
-    CAT=/bin/cat
-
-    echo $1 >> $2
-    if [ -e $1 ] ; then
-	${CAT} $1 >> $2
-    else
-	echo "$1 don't exist" >> $2
-    fi
-    echo >> $2
 }
 
 function kernel-update () {
@@ -86,7 +86,7 @@ function kernel-update () {
     echo "OpenAFS client"           >> ${FILEKERNEL}
     rxdebug localhost 7001 -version >> ${FILEKERNEL}
     cmdebug localhost -cache        >> ${FILEKERNEL}
-    echo "/proc/sys"                >> ${FILEKERNEL}
+    echo "/proc/sys"                            >> ${FILEKERNEL}
     cat-file /proc/sys/kernel/randomize_va_space   ${FILEKERNEL}
     cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
@@ -128,7 +128,7 @@ function hardware-update () {
     HPACUCLI=/usr/sbin/hpacucli
     
     > ${FILEPCI}
-    echo "#################### lspci "       >> ${FILEPCI}
+    echo "#################### lspci "      >> ${FILEPCI}
     ${LSPCI}           >> ${FILEPCI}
     echo "#################### lspci -tv"   >> ${FILEPCI}
     ${LSPCI} -tv       >> ${FILEPCI}
@@ -137,7 +137,7 @@ function hardware-update () {
     echo "#################### lspci -vv"   >> ${FILEPCI}
     ${LSPCI} -vv       >> ${FILEPCI}
     cat-file /proc/pci    ${FILEPCI}
-    ${LSPCI} -x         > ${FILEPCI}-x
+    ${LSPCI} -x                  > ${FILEPCI}-x
     cat-file /proc/bus/pci/devices ${FILEPCI}-x
     
     > ${FILEALSA}
