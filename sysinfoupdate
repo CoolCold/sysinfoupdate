@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-01-01 22:52:15 +0000 (Sáb, 01 Jan 2011) $
+# $Date: 2011-01-05 16:16:16 +0000 (Qua, 05 Jan 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 1703 $
+# $Revision: 1709 $
 
 
 
@@ -126,7 +126,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 1703 $ picard' >> "${FILE}"
+	echo "$PROG" ' $Revision: 1709 $ picard' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -159,7 +159,7 @@ function partition-update () {
 
     echo -n "."
     > ${FILEPART}
-    for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	echo -n "${disk} "
 	if test -r ${disk} ; then
 	echo -n "${disk} "
@@ -601,7 +601,7 @@ function hardware-update () {
 
     #set -x
     > ${FILEHDPARM}
-    for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
 # 	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
