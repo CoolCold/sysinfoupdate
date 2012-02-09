@@ -148,7 +148,9 @@ function partition-update () {
     echo -n "."
     > ${FILEPART}
     for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+	echo -n "${disk} "
 	if test -r ${disk} ; then
+	echo -n "${disk} "
 	    echo_execute ${FILEPART} ${FDISK} -l ${disk} 2> /dev/null
 	    echo_execute ${FILEPART} ${GDISK} -l ${disk}
 	    echo_execute ${FILEPART} ${PARTED} ${disk} print unit s print
@@ -156,6 +158,7 @@ function partition-update () {
     done
     echo -n "."
     if test -x ${PARTED} ; then
+	echo "${PARTED} -l" >> ${FILEPART}
 	time ${PARTED} -l >> ${FILEPART}
 	echo "parted -l"
     else
@@ -172,15 +175,15 @@ function partition-update () {
 	    echo_execute ${FILEFS} ${MOUNT} -l
 	    ;;
 	darwin8.0)
-	    ${MOUNT}                            >> ${FILEFS}
+	    echo_execute ${FILEFS} ${MOUNT}
 	    ;;
 	*)
-	    ${MOUNT}                            >> ${FILEFS}	
+	    echo_execute ${FILEFS} ${MOUNT}
     esac
     echo "size of filesystems df -h"    >> ${FILEFS}
-    ${DF} -h                            >> ${FILEFS}
+    echo_execute ${FILEFS} ${DF} -h
     echo "inodes of filesystems df -iH" >> ${FILEFS}
-    ${DF} -iH                           >> ${FILEFS}   
+    echo_execute ${FILEFS} ${DF} -iH
     
     ${CP} /etc/fstab ${FILEFSTAB}
 }
