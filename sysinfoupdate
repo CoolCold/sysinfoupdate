@@ -791,8 +791,11 @@ function net-update () {
     
     echo -n "."
     > ${FILENET}
+    echo                                        >> ${FILENET}
     echo "ifconfig cleaned     $RANDOM"		>> ${FILENET}
     ${IFCONFIG} | grep -v TX | grep -v RX	>> ${FILENET}
+    echo "You may not pay attention to the following section." >> ${FILENET}
+    echo "The counters produces false positives"               >> ${FILENET}
     echo "ifconfig             $RANDOM"         >> ${FILENET}
     ${IFCONFIG}            >> ${FILENET}
     # Get routing tables
@@ -801,6 +804,7 @@ function net-update () {
     else
 	echo "route"           >> ${FILENET}
 	${ROUTE}               >> ${FILENET}
+	echo                                       >> ${FILENET}
 	echo "route -A inet6 cleaned     $RANDOM"  >> ${FILENET}
 	printf "%45s %40s %8s %8s %4s %4s %10s\n" "Destination" \
 	    "Next Hop" "Flags" "Metric" "Ref" "Use" "Iface" \
@@ -808,6 +812,8 @@ function net-update () {
 	${ROUTE} -A inet6 \
 	    | awk '{printf "%45s %40s %8s %8s XXXX XXXX %10s\n",$1,$2,$3,$4,$7}' \
 	    >> ${FILENET}
+	echo "You may not pay attention to the following section.">> ${FILENET}
+	echo "The counters produces false positives"              >> ${FILENET}
 	echo "route -A inet6             $RANDOM"  >> ${FILENET}
 	${ROUTE} -A inet6      >> ${FILENET}
     fi
@@ -820,6 +826,7 @@ function net-update () {
 	${IP} addr             >> ${FILENET}
 	echo "ip addr"         >> ${FILENET}
 	${IP} route            >> ${FILENET}
+	echo                                      >> ${FILENET}
 	echo "ip -6 route cleaned up $RANDOM"     >> ${FILENET}
 	# Updated for gisela on sarge 20070328
         # Updated for atena on 20070326 on etch
@@ -836,6 +843,8 @@ function net-update () {
 /^default.*dev [.[:alnum:]]+  metric/ { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " XXXX " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 " " $17 " " $18 " " $19 " " $20 " " $21 " " $22}\
 '\
 	    >> ${FILENET}
+	echo "You may not pay attention to the following section.">> ${FILENET}
+	echo "The counters produces false positives"              >> ${FILENET}
 	echo "ip -6 route            $RANDOM"     >> ${FILENET}
 	${IP} -6 route         >> ${FILENET}
 	echo "ip tunnel"       >> ${FILENET}
