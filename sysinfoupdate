@@ -57,6 +57,20 @@ function cat-file () {
     echo >> $2
 }
 
+# $1 - output file
+# $2 - command to execute
+# $3 - options to the command
+function echo_execute () {
+    OUTPUT=$1
+    shift
+    NAME=`basename $1`
+    COMMAND=$1
+    shift
+    echo $NAME $* >> ${OUTPUT}
+    $COMMAND $* >> ${OUTPUT}
+    echo >> ${OUTPUT}
+}
+
 function packages-list-update () {
     FILE="${DIARIO}/packages-list"
 
@@ -307,6 +321,7 @@ function hardware-update () {
     cat-file /proc/bus/input/devices          ${FILEHARDWARE}
     cat-file /proc/bus/input/handlers         ${FILEHARDWARE}
     cat-file /proc/bus/ieee1394/devices       ${FILEHARDWARE}
+    cat-file /proc/bus/pccard/drivers         ${FILEHARDWARE}
     cat-file /proc/bus/usb/devices            ${FILEHARDWARE}
     cat-file /proc/bus/usb/drivers            ${FILEHARDWARE}
     cat-file /proc/ide/drivers                ${FILEHARDWARE}
@@ -370,7 +385,7 @@ function hardware-update () {
     fi
 
     if [ -d /sys/devices/system/cpu ] ; then
-       for cpu in /sys/devices/system/cpu* ; do
+       for cpu in /sys/devices/system/cpu/cpu* ; do
            if [ -d ${cpu}/cpufreq ] ; then
                for file in ${cpu}/cpufreq/* ; do
                    if [ -f "${file}" ] ; then
@@ -402,6 +417,37 @@ function hardware-update () {
 	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
     fi
 }
+
+
+function ipmi-update () {
+    FILEIPMI=${DIARIO}/ipmi-report
+
+    if test ! -e /dev/ipmi0 ; then
+	return
+    fi
+
+    > ${FILEIPMI}
+    
+    echo_execute ${FILEIPMI} ipmitool "chassis status"
+    echo_execute ${FILEIPMI} ipmitool "chassis selftest"
+    echo_execute ${FILEIPMI} ipmitool "mc guid"
+    echo_execute ${FILEIPMI} ipmitool "mc info"
+    echo_execute ${FILEIPMI} ipmitool "mc getenables"
+    echo_execute ${FILEIPMI} ipmitool "mc selftest"
+    echo_execute ${FILEIPMI} ipmitool "lan print"
+    echo_execute ${FILEIPMI} ipmitool "pef status"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "sdr info"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "sdr list all"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "sensor list"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "session info all"
+    echo_execute ${FILEIPMI} ipmitool "user summary"
+    echo_execute ${FILEIPMI} ipmitool "user list"
+}
+
 
 function hpacucli-update () {
     HPACUCLI=/usr/sbin/hpacucli
@@ -520,6 +566,42 @@ function hpacucli-update-7.6 () {
 }
 
 
+function twcli-update () {
+    FILETWCLI=${DIARIO}/twcli-report
+    
+
+    if test -x /usr/sbin/tw_cli ; then
+	TWCLI=/usr/sbin/tw_cli
+    else
+	TWCLI=twcli
+    fi
+
+    if ! which ${TWCLI} > /dev/null ; then
+	return
+    fi
+
+    > ${FILETWCLI}
+    echo "tw_cli show ver"                          >> ${FILETWCLI}
+    ${TWCLI} show ver                               >> ${FILETWCLI}
+    echo "tw_cli show"                              >> ${FILETWCLI}
+    ${TWCLI} show                                   >> ${FILETWCLI}
+    echo "tw_cli show alarms"                       >> ${FILETWCLI}
+    ${TWCLI} show alarms                            >> ${FILETWCLI}
+    echo "tw_cli show rebuild"                      >> ${FILETWCLI}
+    ${TWCLI} show rebuild                           >> ${FILETWCLI}
+    echo "tw_cli show verify"                       >> ${FILETWCLI}
+    ${TWCLI} show verify                            >> ${FILETWCLI}
+    echo "tw_cli show selftest"                     >> ${FILETWCLI}
+    ${TWCLI} show selftest                          >> ${FILETWCLI}
+    for ctrl in `tw_cli show | egrep "^c[0-9] " | cut -f 1 -d ' '` ; do
+	echo "tw_cli /$ctrl show all"               >> ${FILETWCLI}
+	${TWCLI} /$ctrl show all                    >> ${FILETWCLI}
+    done
+
+    echo "tw_cli show diag"                         >> ${FILETWCLI}
+    ${TWCLI} show diag                              >> ${FILETWCLI}
+    echo -n "."
+}
 
 
 function net-update () {
@@ -653,7 +735,9 @@ if [ -d ${DIARIO} ] ; then
     kernel-update
     kernel-boot
     hardware-update
+    ipmi-update
     hpacucli-update-7.6
+    twcli-update
     net-update
     services-update
     echo " Done"
