@@ -417,6 +417,33 @@ function hardware-update () {
     fi
 }
 
+
+function ipmi-update () {
+    FILEIPMI=${DIARIO}/ipmi-report
+
+    > ${FILEIPMI}
+    
+    echo_execute ${FILEIPMI} ipmitool "chassis status"
+    echo_execute ${FILEIPMI} ipmitool "chassis selftest"
+    echo_execute ${FILEIPMI} ipmitool "mc guid"
+    echo_execute ${FILEIPMI} ipmitool "mc info"
+    echo_execute ${FILEIPMI} ipmitool "mc getenables"
+    echo_execute ${FILEIPMI} ipmitool "mc selftest"
+    echo_execute ${FILEIPMI} ipmitool "lan print"
+    echo_execute ${FILEIPMI} ipmitool "pef status"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "sdr info"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "sdr list all"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "sensor list"
+    echo -n "."
+    echo_execute ${FILEIPMI} ipmitool "session info all"
+    echo_execute ${FILEIPMI} ipmitool "user summary"
+    echo_execute ${FILEIPMI} ipmitool "user list"
+}
+
+
 function hpacucli-update () {
     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
@@ -703,6 +730,7 @@ if [ -d ${DIARIO} ] ; then
     kernel-update
     kernel-boot
     hardware-update
+    ipmi-update
     hpacucli-update-7.6
     twcli-update
     net-update
