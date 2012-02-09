@@ -1,7 +1,18 @@
 #!/bin/bash
+#
+# (c) 2005-2011 Instituto Superior Técnico
+#
+# License: GPL-2
+#
+# $Date: 2011-01-01 21:43:06 +0000 (Sáb, 01 Jan 2011) $
+# $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
+# $Revision: 1702 $
+
+
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
+PROG=$0
 
 # Define VARS to call commands
 WHICH=`which which`
@@ -115,7 +126,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$0 $Revision: 1701 $" >> "${FILE}"
+	echo "$PROG $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $ $Revision: 1702 $" >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
 	cat-file /etc/issue.net      "${FILE}"
