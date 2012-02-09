@@ -112,7 +112,6 @@ function hardware-update () {
     cat-file /proc/ide/drivers           ${FILEHARDWARE}
     cat-file /proc/ide/via         ${FILEHARDWARE}
     cat-file /proc/ide/piix        ${FILEHARDWARE}
-    cat-file /proc/net/dev         ${FILEHARDWARE}
     cat-file /proc/scsi/scsi       ${FILEHARDWARE}
 
     > ${FILEHDPARM}
@@ -124,12 +123,40 @@ function hardware-update () {
     
 }
 
+function net-update () {
+    FILENET=${DIARIO}/net-list
+    IFCONFIG=/sbin/ifconfig
+    ROUTE=/sbin/route
+    IP=/sbin/ip
+    
+    > ${FILENET}
+    echo "ifconfig"     >> ${FILENET}
+    ${IFCONFIG}         >> ${FILENET}
+    echo "route"        >> ${FILENET}
+    ${ROUTE}            >> ${FILENET}
+    echo "route -A inet6" >> ${FILENET}
+    ${ROUTE} -A inet6   >> ${FILENET}
+    echo "ip link"      >> ${FILENET}
+    ${IP} link          >> ${FILENET}
+    echo "ip addr"      >> ${FILENET}
+    ${IP} addr          >> ${FILENET}
+    echo "ip addr"      >> ${FILENET}
+    ${IP} route         >> ${FILENET}
+    echo "ip -6 route"  >> ${FILENET}
+    ${IP} -6 route      >> ${FILENET}
+    echo "ip tunnel"    >> ${FILENET}
+    ${IP} tunnel        >> ${FILENET}
+    cat-file /proc/net/dev ${FILENET}
+}
+
+
 if [ -d ${DIARIO} ] ; then
     packages-list-update
     partition-update
     lvm-update
     kernel-update
     hardware-update
+    net-update
 else
     echo "Don't exist ${DIARIO} directory, not running"
 fi
