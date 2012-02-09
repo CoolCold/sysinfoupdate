@@ -354,6 +354,12 @@ function hardware-update () {
     cat-file /proc/ide/via                    ${FILEHARDWARE}
     cat-file /proc/ide/piix                   ${FILEHARDWARE}
     cat-file /proc/ide/svwks                  ${FILEHARDWARE}
+    cat-file /proc/ide/ide0/channel           ${FILEHARDWARE}
+    cat-file /proc/ide/ide0/mate              ${FILEHARDWARE}
+    cat-file /proc/ide/ide0/model             ${FILEHARDWARE}
+    cat-file /proc/ide/ide1/channel           ${FILEHARDWARE}
+    cat-file /proc/ide/ide1/mate              ${FILEHARDWARE}
+    cat-file /proc/ide/ide1/model             ${FILEHARDWARE}
     cat-file /proc/scsi/scsi                  ${FILEHARDWARE}
     cat-file /proc/scsi/sg/version            ${FILEHARDWARE}
     cat-file /proc/scsi/sg/devices            ${FILEHARDWARE}
@@ -365,6 +371,7 @@ function hardware-update () {
     cat-file /proc/pmu/interrupts             ${FILEHARDWARE}
     cat-file /proc/pmu/options                ${FILEHARDWARE}
     cat-file /proc/driver/rtc                 ${FILEHARDWARE}
+    cat-file /proc/driver/snd-page-alloc      ${FILEHARDWARE}
     cat-file /proc/dri/0/name                 ${FILEHARDWARE}
     cat-file /proc/dri/0/mem                  ${FILEHARDWARE}
     cat-file /proc/mpt/version                ${FILEHARDWARE}
@@ -380,6 +387,9 @@ function hardware-update () {
 
     cat-file /proc/acpi/alarm			${FILEHARDWARE}
     cat-file /proc/acpi/info			${FILEHARDWARE}
+    cat-file /proc/acpi/event			${FILEHARDWARE}
+    cat-file /proc/acpi/sleep			${FILEHARDWARE}
+    cat-file /proc/acpi/wakeup			${FILEHARDWARE}
     cat-file /proc/acpi/button/power/PWRB/info	${FILEHARDWARE}
     cat-file /proc/acpi/button/power/PWRF/info	${FILEHARDWARE}
     
