@@ -303,6 +303,8 @@ function hardware-update () {
     HPASMCLI=/sbin/hpasmcli
     PRTCONF=/usr/sbin/prtconf
     EEPROM=/usr/sbin/eeprom
+    GETEDID=/usr/bin/get-edid
+    PARSEEDID=/usr/bin/parse-edid
 
     echo -n "."
     > ${FILEPCI}
@@ -500,6 +502,10 @@ function hardware-update () {
     if [ -x $EEPROM ] ; then
 	echo_execute ${FILEHARDWARE} $EEPROM ""
     fi
+
+
+    echo "#################### get-edid | parse-edid "      >> ${FILEPCI}
+    ${GETEDID} | ${PARSEEDID}                               >> ${FILEHARDWARE}
 }
 
 
