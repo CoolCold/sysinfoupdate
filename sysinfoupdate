@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-05-16 20:36:18 +0100 (Seg, 16 Mai 2011) $
+# $Date: 2011-05-16 21:07:48 +0100 (Seg, 16 Mai 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4955 $
+# $Revision: 4956 $
 
 
 
@@ -83,7 +83,7 @@ set-command SDPARM sdparm
 set-command HPADUCLI hpaducli "For SCSI from HP/Compaq"
 set-command HPACUCLI hpacucli "For SCSI from HP/Compaq"
 set-command HPASMCLI hpasmcli "For Hardware from HP/Compaq"
-set-command HPONCFG hponcfg "For iLO Hardware from HP/COmpaq"
+set-command HPONCFG hponcfg "For iLO Hardware from HP/Compaq"
 set-command PRTCONF prtconf "For SPARC Machines"
 set-command EEPROM eeprom "For SPARC Machines"
 set-command HWINFO hwinfo
@@ -135,7 +135,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4955 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4956 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
