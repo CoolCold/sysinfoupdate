@@ -87,6 +87,10 @@ function packages-list-update () {
 	COLUMNS=175 dpkg --list >> "${FILE}"
 	echo "rpm packages installed" >> "${FILE}"
 	rpm -q -a >> "${FILE}" 2>&1
+	echo "Java alternatives" >> "${FILE}"
+	update-java-alternatives -l >> "${FILE}"
+	echo "Contents of /etc/alternatives" >> "${FILE}"
+	ls -alF /etc/alternatives >> "${FILE}"
     fi
 
 }
