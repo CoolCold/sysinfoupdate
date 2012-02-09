@@ -176,6 +176,7 @@ function md-update () {
 
 function kernel-update () {
     FILEKERNEL=${DIARIO}/kernel-list
+    FILEPROCSYS=${DIARIO}/procsys-list
     CAT=/bin/cat
     LSMOD=/sbin/lsmod
     FREE=/usr/bin/free
@@ -257,6 +258,14 @@ function kernel-update () {
 	cmdebug localhost -cache        >> ${FILEKERNEL}
 	cmdebug localhost -addrs        >> ${FILEKERNEL}
     fi
+
+    > ${FILEPROCSYS}
+    cat-file /proc/version                                  ${FILEPROCSYS}
+    find /proc/ -print | grep -v "^/proc/[0-9]" | sort   >> ${FILEPROCSYS}
+    ls -alFR --time-style=+%Y /proc/[a-zA-Z]*            >> ${FILEPROCSYS}
+    find /sys/ -print  | grep -v "^/sys/[0-9]" | sort    >> ${FILEPROCSYS}
+    ls -alFR --time-style=+%Y /sys/[a-zA-Z]*             >> ${FILEPROCSYS}
+    
 }
 
 function kernel-boot () {
