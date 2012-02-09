@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-01-04 22:37:21 +0000 (Ter, 04 Jan 2011) $
+# $Date: 2011-01-05 16:15:43 +0000 (Qua, 05 Jan 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4652 $
+# $Revision: 4657 $
 
 
 
@@ -126,7 +126,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4652 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4657 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -159,7 +159,7 @@ function partition-update () {
 
     echo -n "."
     > ${FILEPART}
-    for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	echo -n "${disk} "
 	if test -r ${disk} ; then
 	echo -n "${disk} "
@@ -589,7 +589,7 @@ function hardware-update () {
 
     #set -x
     > ${FILEHDPARM}
-    for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
 # 	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
