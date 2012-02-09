@@ -276,6 +276,8 @@ function hardware-update () {
     FILEHDPARM=${DIARIO}/hdparm-list
     HPADUCLI=/usr/sbin/hpaducli
     HPASMCLI=/sbin/hpasmcli
+    PRTCONF=/usr/sbin/prtconf
+    EEPROM=/usr/sbin/eeprom
 
     echo -n "."
     > ${FILEPCI}
@@ -415,6 +417,16 @@ function hardware-update () {
     fi
     if [ -x ${HPASMCLI} ] ;then
 	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+    fi
+
+    if [ -x $PRTCONF ] ; then
+	echo_execute ${FILEHARDWARE} $PRTCONF ""
+	echo                        >> ${FILEHARDWARE}
+	echo_execute ${FILEHARDWARE} $PRTCONF -p 
+    fi
+
+    if [ -x $EEPROM ] ; then
+	echo_execute ${FILEHARDWARE} $EEPROM ""
     fi
 }
 
