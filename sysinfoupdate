@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 19:44:21 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 21:20:05 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2156 $ Calhariz
+# $Revision: 2157 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2156 $ Calhariz'
+VERSION=' $Revision: 2157 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -217,15 +217,9 @@ function lvm-update () {
 	echo_execute ${FILELVM} ${DMSETUP} info
 	echo_execute ${FILELVM} ${DMSETUP} deps
 	echo_execute ${FILELVM} ${DMSETUP} table
-    else
-	echo
-	echo "${DMSETUP} not found, please install"
     fi
     if [ -x ${VGDISPLAY} ] ; then
 	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
-    else
-	echo
-	echo "LVM tools not found?, please check"
     fi
 
     if [ ! -x ${LVDISPLAY} -o ! -x ${PVDISPLAY} ] ; then
@@ -244,8 +238,6 @@ function md-update () {
 
     echo -n "."
     if [ ! -x ${MDADM} ] ; then
-	echo
-	echo "${MDADM} not found, please install"
 	return
     fi
     ${MDADM} mdadm --detail /dev/md* >> ${FILEMD} 2>&1
@@ -279,9 +271,6 @@ function kernel-update () {
     echo 			>> ${FILEKERNEL}
     if [ -x ${LSMOD} ] ; then
 	${LSMOD}             >>    ${FILEKERNEL}
-    else
-	echo
-	echo "${LSMOD} not found, please check"
     fi
     echo                 >>    ${FILEKERNEL}
     cat-file /proc/fb          ${FILEKERNEL}
@@ -445,9 +434,6 @@ function hardware-update () {
 	${LSUSB}                            >> ${FILEUSB}
 	${LSUSB} -t                         >> ${FILEUSB} 2>&1
 	${LSUSB} -v                         >> ${FILEUSB}
-    else
-	echo
-	echo "${LSUSB} not found, please check"
     fi
 
     > ${FILEALSA}
@@ -649,7 +635,6 @@ function hardware-update () {
     echo_execute ${FILEHWINFO}  ${HWINFO} "--short"
     echo_execute ${FILEHWINFO}  ${HWINFO} ""
 }
-
 
 function video-update () {
     FILEVIDEO=${DIARIO}/video-list
