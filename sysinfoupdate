@@ -427,7 +427,7 @@ if [ -d ${DIARIO} ] ; then
     kernel-update
     kernel-boot
     hardware-update
-    hpacucli-update
+    hpacucli-update-7.6
     net-update
     echo " Done"
 else
