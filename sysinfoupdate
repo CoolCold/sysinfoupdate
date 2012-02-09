@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-08-05 12:34:55 +0100 (Sex, 05 Ago 2011) $
+# $Date: 2011-11-25 15:02:20 +0000 (Sex, 25 Nov 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 5090 $ CIIST
+# $Revision: 5390 $ CIIST
 
 
 
@@ -14,7 +14,7 @@
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 5090 $ CIIST'
+VERSION=' $Revision: 5390 $ CIIST'
 
 echo "$PROG" "$VERSION"
 
@@ -840,6 +840,7 @@ function hpacucli-update-7.85 () {
 function hpacucli-update-generic () {
 #     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
+    FILEHPACUCLIDIAG=${DIARIO}/hpacucli-diag-report
     TMPDIR=`${MKTEMPDIR}`
 
     echo -n "."
@@ -852,6 +853,9 @@ function hpacucli-update-generic () {
     V1=`echo $V | cut -d . -f 1`
     V2=`echo $V | cut -d . -f 2`
     V3=`echo $V | cut -d . -f 3`
+
+    > ${FILEHPACUCLIDIAG}
+    ${HPACUCLI} controller all diag file=${FILEHPACUCLIDIAG}
 
     > ${FILEHPACUCLI}
     echo "upacucli version detected $V => $V1 $V2 $V3" >> ${FILEHPACUCLI}
