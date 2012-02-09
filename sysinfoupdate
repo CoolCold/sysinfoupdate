@@ -190,6 +190,12 @@ function kernel-update () {
     cat-file /proc/fb          ${FILEKERNEL}
     cat-file /proc/locks       ${FILEKERNEL}
     cat-file /proc/execdomains ${FILEKERNEL}
+
+    echo "IRQ CPU Affinity"                    >> ${FILEKERNEL}
+    for irq in /proc/irq/* ; do
+	cat-file $irq/smp_affinity                ${FILEKERNEL}
+    done
+    
     echo "free"          >>    ${FILEKERNEL}
     if [ -x ${FREE} ] ; then
 	${FREE}              >>    ${FILEKERNEL}
