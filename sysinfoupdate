@@ -213,7 +213,6 @@ function kernel-boot () {
 		    fi
 		fi
 	    fi
-	    
 	    ;;
 	darwin8.0)
 	    DMESG > ${FILEKERNELBOOT}
