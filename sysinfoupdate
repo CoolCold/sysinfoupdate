@@ -121,6 +121,8 @@ function kernel-update () {
 
 function kernel-boot () {
     FILEKERNELBOOT=${DIARIO}/kernel-boot
+    DMESGLOG=/var/log/dmesg
+    KERNELLOG=/var/log/kern.log
     DMESG=/bin/dmesg
     HEAD=/usr/bin/head
     GREP=/bin/grep
@@ -133,12 +135,20 @@ function kernel-boot () {
     if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
 	${CP} ${TMPFILE} ${FILEKERNELBOOT}
     else
-	if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
-	    ${CP} /var/log/dmesg ${FILEKERNELBOOT}
+	if ${GREP} "Linux version" ${KERNELLOG}> /dev/null ; then
+	    LMATCH=`grep -n "Linux version" /var/log/kern.log | tail -1 | cut -d: -f 1`
+	    FSIZE=`wc -l /var/log/kern.log | cut -f 1 -d ' '`
+	    tail --lines=$(( FSIZE - LMATCH + 1)) /var/log/kern.log | cut -d : -f 4- | cut -b 2- > ${FILEKERNELBOOT}
 	else
-	    echo "Could not find initial kernel boot message," 
-	    echo "and /var/log/dmesg did not help."
-	    echo "See if exist an alternative."
+	    if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
+		${CP} /var/log/dmesg ${FILEKERNELBOOT}
+	    else
+		echo "Could not find initial kernel boot message, ${DMESG} ${KERNELLOG} and ${DMESGLOG} did not help."
+		echo 
+		echo "See if exist an alternative."
+		echo
+		echo "If kernel boot messages are to big to fit in /proc/kmsg ring buffer, considerar to change runlevels of sysklogd, klogd and bootmisc.sh.  Sugestion: /etc/rcS.d/S40sysklog /etc/rcS.d/S41klogd /etc/rcS.d/S41bootmisc.sh"
+	    fi
 	fi
     fi
     if [ -e /var/log/boot ] ; then
