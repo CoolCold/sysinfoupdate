@@ -141,6 +141,9 @@ function kernel-boot () {
 	    echo "See if exist an alternative."
 	fi
     fi
+    if [ -e /var/log/boot ] ; then
+	${CP} -u --preserve=timestamps /var/log/boot ${DIARIO}/boot-log
+    fi
 }
 
 function hardware-update () {
