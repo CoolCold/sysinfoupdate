@@ -578,6 +578,11 @@ function net-update () {
     cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh1    ${FILENET}
     cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh2    ${FILENET}
     cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh3    ${FILENET}
+
+    echo "Should reduce netfilter variables to record"   >> ${FILENET}
+    for file in /proc/sys/net/ipv4/netfilter/* ; do
+	cat-file "${file}" ${FILENET}
+    done
 }
 
 
