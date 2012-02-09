@@ -184,6 +184,7 @@ function kernel-update () {
     cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/poolsize      ${FILEKERNEL}
+    cat-file /proc/sys/vm/vdso_enabled       	   ${FILEKERNEL}
 }
 
 function kernel-boot () {
@@ -327,6 +328,13 @@ function hardware-update () {
 		    cat-file /sys/devices/system/cpu/${cpu}/cpufreq/${file}		${FILEHARDWARE}
 		fi
 	    done
+	fi
+    done
+
+    echo "IO Scheduler"			     >> ${FILEHARDWARE}
+    for file in /sys/block/*/queue/* ; do
+	if [ -f $file -a -r $file ] ; then
+	    cat-file $file			${FILEHARDWARE}
 	fi
     done
 
