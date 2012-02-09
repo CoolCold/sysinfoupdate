@@ -722,6 +722,8 @@ function net-update () {
     cat-file /proc/sys/net/ipv4/tcp_available_congestion_control   ${FILENET}
     cat-file /proc/sys/net/ipv4/tcp_allowed_congestion_control     ${FILENET}
     cat-file /proc/sys/net/ipv4/ip_forward                  ${FILENET}
+    cat-file /proc/sys/net/ipv4/conf/all/forwarding         ${FILENET}
+    cat-file /proc/sys/net/ipv4/conf/all/rp_filter          ${FILENET}
     cat-file /proc/sys/net/ipv4/neigh/default/gc_interval   ${FILENET}
     cat-file /proc/sys/net/ipv4/neigh/default/gc_stale_time ${FILENET} 
     cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh1    ${FILENET}
@@ -741,6 +743,12 @@ function net-update () {
     for file in /proc/sys/net/ipv4/netfilter/* ; do
 	cat-file "${file}" ${FILENET}
     done
+    echo "Should reduce conf variables to record from all interfaces"
+    for file in /proc/sys/net/ipv4/conf/*/* ; do
+	cat-file "${file}" ${FILENET}
+    done
+
+
 }
 
 function services-update () {
