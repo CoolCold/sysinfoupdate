@@ -170,6 +170,7 @@ function md-update () {
 
 function kernel-update () {
     FILEKERNEL=${DIARIO}/kernel-list
+    FILEPROCSYS=${DIARIO}/procsys-list
     CAT=/bin/cat
     LSMOD=/sbin/lsmod
     FREE=/usr/bin/free
@@ -233,6 +234,7 @@ function kernel-update () {
     cat-file /proc/sys/vm/nr_overcommit_hugepages  ${FILEKERNEL}
     cat-file /proc/sys/vm/stat_interval            ${FILEKERNEL}
     cat-file /proc/sys/vm/mmap_min_addr            ${FILEKERNEL}
+    cat-file /proc/sys/vm/highmem_is_dirtyable     ${FILEKERNEL}
 
     echo "OpenAFS client"               >> ${FILEKERNEL}
     if [ -x ${AFSD1} ] ; then
@@ -250,6 +252,14 @@ function kernel-update () {
 	cmdebug localhost -cache        >> ${FILEKERNEL}
 	cmdebug localhost -addrs        >> ${FILEKERNEL}
     fi
+
+    > ${FILEPROCSYS}
+    cat-file /proc/version                                  ${FILEPROCSYS}
+    find /proc/ -print | grep -v "^/proc/[0-9]" | sort   >> ${FILEPROCSYS}
+    ls -alFR /proc/[a-zA-Z]*                             >> ${FILEPROCSYS}
+    find /sys/ -print  | grep -v "^/sys/[0-9]" | sort    >> ${FILEPROCSYS}
+    ls -alFR /sys/[a-zA-Z]*                              >> ${FILEPROCSYS}
+    
 }
 
 function kernel-boot () {
