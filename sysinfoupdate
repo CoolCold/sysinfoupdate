@@ -35,6 +35,15 @@ function lvm-update () {
     ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
 }
 
+function md-update () {
+    MDADM=/sbin/mdadm
+    FILEMD=${DIARIO}/md-list
+    > ${FILEMD}
+    
+    mdadm --detail /dev/md* >> ${FILEMD} 2>&1
+    cat-file /proc/mdstat      ${FILEMD}
+}
+
 # $1 - procfile
 # $2 - File to log
 function cat-file () {
@@ -170,6 +179,7 @@ if [ -d ${DIARIO} ] ; then
     packages-list-update
     partition-update
     lvm-update
+    md-update
     kernel-update
     hardware-update
     net-update
