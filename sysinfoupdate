@@ -206,8 +206,12 @@ function hardware-update () {
 	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
     
-    ${HPADUCLI} -f ${DIARIO}/hpadu-report
-    ${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+    if [ -x ${HPADUCLI} ] ; then
+	${HPADUCLI} -f ${DIARIO}/hpadu-report
+    fi
+    if [ -x ${HPASMCLI} ] ;then
+	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+    fi
 }
 
 function hpacucli-update () {
