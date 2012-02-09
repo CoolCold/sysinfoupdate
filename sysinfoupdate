@@ -64,10 +64,14 @@ function echo_execute () {
     OUTPUT=$1
     shift
     NAME=`basename $1`
-    COMMAND=$1
+    COMMAND="$1"
     shift
     echo $NAME $* >> ${OUTPUT}
-    $COMMAND $* >> ${OUTPUT}
+    if test -x "$COMMAND" ; then
+	$COMMAND $* >> ${OUTPUT}
+    else
+	echo "$COMMAND is not executable" >> ${OUTPUT}
+    fi
     echo >> ${OUTPUT}
 }
 
@@ -108,7 +112,8 @@ function partition-update () {
     done
     echo -n "."
     if test -x ${PARTED} ; then
-	${PARTED} -l >> ${FILEPART}
+	time ${PARTED} -l >> ${FILEPART}
+	echo "parted -l"
     else
 	echo 
 	echo "${PARTED} not found, please check or install parted"
@@ -153,7 +158,7 @@ function lvm-update () {
 	echo_execute ${FILELVM} ${DMSETUP} table
     else
 	echo
-	echo "${DMSETUP} not found, pelase install"
+	echo "${DMSETUP} not found, please install"
     fi
     if [ -x ${VGDISPLAY} ] ; then
 	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
