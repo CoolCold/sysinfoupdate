@@ -95,10 +95,10 @@ function kernel-update () {
     cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
     echo "OpenAFS client"           >> ${FILEKERNEL}
-    if which rxdebug ; then
+    if which rxdebug > /dev/null ; then
 	rxdebug localhost 7001 -version >> ${FILEKERNEL}
     fi
-    if which cmdebug ; then
+    if which cmdebug > /dev/null ; then
 	cmdebug localhost -cache        >> ${FILEKERNEL}
     fi
     echo "/proc/sys"                            >> ${FILEKERNEL}
