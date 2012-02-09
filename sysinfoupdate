@@ -542,6 +542,7 @@ function hardware-update () {
     > ${FILEHDPARM}
     for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
+	    echo -n " " ${disk} " "
 	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
 	${HDPARM} -i ${disk} >> ${FILEHDPARM}        2> /dev/null
 	${HDPARM} -I ${disk} >> ${FILEHDPARM}        2> /dev/null
