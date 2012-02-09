@@ -104,6 +104,7 @@ function hardware-update () {
     cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
     echo                               >> ${FILEHARDWARE}
     cat-file /proc/bus/input/devices      ${FILEHARDWARE}
+    cat-file /proc/bus/ieee1394/devices   ${FILEHARDWARE}
     cat-file /proc/bus/usb/devices        ${FILEHARDWARE}
     cat-file /proc/bus/usb/drivers        ${FILEHARDWARE}
     cat-file /proc/ide/drivers            ${FILEHARDWARE}
