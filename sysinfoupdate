@@ -169,6 +169,7 @@ function kernel-update () {
     CAT=/bin/cat
     LSMOD=/sbin/lsmod
     FREE=/usr/bin/free
+    VMSTAT=/usr/bin/vmstat
     AFSD1=/usr/sbin/afsd
     AFSD2=/sbin/afsd
 
@@ -197,10 +198,10 @@ function kernel-update () {
 	cat-file $irq/smp_affinity                ${FILEKERNEL}
     done
     
-    echo "free"          >>    ${FILEKERNEL}
-    if [ -x ${FREE} ] ; then
-	${FREE}              >>    ${FILEKERNEL}
-    fi
+    echo_execute ${FILEKERNEL} ${FREE}
+    echo_execute ${FILEKERNEL} ${VMSTAT} -m
+    echo_execute ${FILEKERNEL} ${VMSTAT} -s
+
     cat-file /proc/meminfo     ${FILEKERNEL}
     cat-file /proc/mtrr        ${FILEKERNEL}
     cat-file /proc/lvm/global  ${FILEKERNEL}
