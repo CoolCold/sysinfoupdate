@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 21:35:01 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 21:38:23 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2161 $ Calhariz
+# $Revision: 2162 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2161 $ Calhariz'
+VERSION=' $Revision: 2162 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -78,6 +78,7 @@ set-command SDPARM sdparm
 set-command HPADUCLI hpaducli "For SCSI from HP/Compaq"
 set-command HPACUCLI hpacucli "For SCSI from HP/Compaq"
 set-command HPASMCLI hpasmcli "For Hardware from HP/Compaq"
+set-command HPONCFG hponcfg "For iLO Hardware from HP/Compaq"
 set-command PRTCONF prtconf "For SPARC Machines"
 set-command EEPROM eeprom "For SPARC Machines"
 set-command HWINFO hwinfo
@@ -889,6 +890,15 @@ function hpacucli-update () {
     hpacucli-update-generic
 }
 
+function ilo-update () {
+    FILEHPONCFG=${DIARIO}/hponcfg-xml
+
+    if ! which ${HPONCFG} > /dev/null ; then
+	return
+    fi
+    
+    ${HPONCFG} -a -w ${FILEHPONCFG}
+}
 
 function twcli-update () {
     FILETWCLI=${DIARIO}/twcli-report
@@ -1103,6 +1113,7 @@ if [ -d ${DIARIO} ] ; then
     video-update
     ipmi-update
     hpacucli-update
+    ilo-update
     twcli-update
     net-update
     services-update
