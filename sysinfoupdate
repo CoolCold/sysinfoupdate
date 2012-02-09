@@ -481,11 +481,11 @@ function net-update () {
 	echo "route"           >> ${FILENET}
 	${ROUTE}               >> ${FILENET}
 	echo "route -A inet6 cleaned"  >> ${FILENET}
-	printf "%30s %30s %8s %8s %4s %4s %10s\n" "Destination" \
+	printf "%45s %40s %8s %8s %4s %4s %10s\n" "Destination" \
 	    "Next Hop" "Flags" "Metric" "Ref" "Use" "Iface" \
 	    >> ${FILENET}
 	${ROUTE} -A inet6 \
-	    | awk '{printf "%30s %30s %8s %8s XXXX XXXX %10s\n",$1,$2,$3,$4,$7}' \
+	    | awk '{printf "%45s %40s %8s %8s XXXX XXXX %10s\n",$1,$2,$3,$4,$7}' \
 	    >> ${FILENET}
 	echo "route -A inet6"  >> ${FILENET}
 	${ROUTE} -A inet6      >> ${FILENET}
