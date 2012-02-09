@@ -347,6 +347,14 @@ function hardware-update () {
     EEPROM=/usr/sbin/eeprom
     HWINFO=/usr/sbin/hwinfo
 
+    HDPARMSPEED="${HDPARM} -tT"
+    if test -x /usr/bin/nice ; then
+	HDPARMSPEED="/usr/bin/nice --20 $HDPARMSPEED"
+    fi
+    if test -x /usr/bin/ionice ; then
+	HDPARMSPEED="/usr/bin/ionice -c 1 $HDPARMSPEED"
+    fi
+
     echo -n "."
     > ${FILEPCI}
     echo "#################### lspci "      >> ${FILEPCI}
@@ -524,16 +532,18 @@ function hardware-update () {
        fi
     done
 
+    set -x
     > ${FILEHDPARM}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj sr0 sr1 sr2 sr3 sr4 cciss/c?d? cciss/disc?/disc ; do
 	${HDPARM}    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	#${HDPARM} -tT /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${HDPARMSPEED} /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${SDPARM} --all                  /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${SDPARM} --all --long           /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${SDPARM} --all --long --verbose /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
+    set +x
 
     if [ -x ${HPADUCLI} ] ; then
 	${HPADUCLI} -f ${DIARIO}/hpadu-report
