@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
@@ -15,12 +15,12 @@ else
 fi
 
 if [ -x /bin/mktemp ] ; then
-    MKTEMP="/bin/mktemp tmp.XXXXXXXXXXXX"
-    MKTEMPDIR="/bin/mktemp -d tmp.XXXXXXXXXXXX"
+    MKTEMP="/bin/mktemp /tmp/tmp.XXXXXXXXXXXX"
+    MKTEMPDIR="/bin/mktemp -d /tmp/tmp.XXXXXXXXXXXX"
 else
     if [ -x /usr/bin/mktemp ] ; then
-	MKTEMP="/usr/bin/mktemp tmp.XXXXXXXXXXXXXXXX"
-	MKTEMPDIR="/usr/bin/mktemp -d tmp.XXXXXXXXXXXXXXXX"
+	MKTEMP="/usr/bin/mktemp /tmp/tmp.XXXXXXXXXXXXXXXX"
+	MKTEMPDIR="/usr/bin/mktemp -d /tmp/tmp.XXXXXXXXXXXXXXXX"
     fi
 fi
 
@@ -493,6 +493,8 @@ function hpacucli-update-7.6 () {
     
     echo -n "."
     ${HPACUCLI} controller all show config detail >> ${FILEHPACUCLI} 
+    
+    rm -rf ${TMPDIR}
 }
 
 
