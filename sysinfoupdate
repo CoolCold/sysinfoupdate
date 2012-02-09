@@ -72,6 +72,7 @@ function hardware-update () {
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
     HPADUCLI=/usr/sbin/hpaducli
+    HPASMCLI=/sbin/hpasmcli
     
     > ${FILEPCI}
     echo "#################### lspci "       >> ${FILEPCI}
@@ -131,6 +132,8 @@ function hardware-update () {
     done
     
     ${HPADUCLI} -f ${DIARIO}/hpadu-report
+    ${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+
 }
 
 function net-update () {
