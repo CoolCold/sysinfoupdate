@@ -802,8 +802,8 @@ function net-update () {
     echo "ifconfig cleaned     $RANDOM"		>> ${FILENET}
     ${IFCONFIG} | grep -v TX | grep -v RX	>> ${FILENET}
     echo >> ${FILENET}
-    echo "You may not pay attention to the following section." >> ${FILENET}
-    echo "The counters produces false positives"               >> ${FILENET}
+    echo "Pay attention that the following section," >> ${FILENET}
+    echo "the counters produces false positives"               >> ${FILENET}
     echo >> ${FILENET}
     echo "ifconfig             $RANDOM"         >> ${FILENET}
     ${IFCONFIG}            >> ${FILENET}
@@ -822,8 +822,8 @@ function net-update () {
 	    | awk '{printf "%45s %40s %8s %8s XXXX XXXX %10s\n",$1,$2,$3,$4,$7}' \
 	    >> ${FILENET}
 	echo >> ${FILENET}
-	echo "You may not pay attention to the following section.">> ${FILENET}
-	echo "The counters produces false positives"              >> ${FILENET}
+	echo "Pay attention that the following section," >> ${FILENET}
+	echo "the counters produces false positives"               >> ${FILENET}
 	echo >> ${FILENET}
 	echo "route -A inet6             $RANDOM"  >> ${FILENET}
 	${ROUTE} -A inet6      >> ${FILENET}
@@ -855,8 +855,8 @@ function net-update () {
 '\
 	    >> ${FILENET}
 	echo >> ${FILENET}
-	echo "You may not pay attention to the following section.">> ${FILENET}
-	echo "The counters produces false positives"              >> ${FILENET}
+	echo "Pay attention that the following section," >> ${FILENET}
+	echo "the counters produces false positives"               >> ${FILENET}
 	echo >> ${FILENET}
 	echo "ip -6 route            $RANDOM"     >> ${FILENET}
 	${IP} -6 route         >> ${FILENET}
