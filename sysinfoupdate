@@ -51,7 +51,6 @@ function partition-update () {
     ${DF} -iH                           >> ${FILEFS}   
 
     ${CP} /etc/fstab ${FILEFSTAB}
-   
 }
 
 function lvm-update () {
@@ -105,7 +104,7 @@ function kernel-update () {
     cat-file /proc/lvm/global  ${FILEKERNEL}
     cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
-    echo "OpenAFS client"           >> ${FILEKERNEL}
+    echo "OpenAFS client"               >> ${FILEKERNEL}
     if which rxdebug > /dev/null ; then
 	rxdebug localhost 7001 -version >> ${FILEKERNEL}
     fi
