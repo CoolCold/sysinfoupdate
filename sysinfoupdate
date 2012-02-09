@@ -538,7 +538,7 @@ function hardware-update () {
        fi
     done
 
-    set -x
+    #set -x
     > ${FILEHDPARM}
     for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
@@ -552,7 +552,7 @@ function hardware-update () {
 	${SDPARM} --all --long --verbose ${disk} >> ${FILEHDPARM} 2> /dev/null
 	fi
     done
-    set +x
+    #set +x
 
     if [ -x ${HPADUCLI} ] ; then
 	${HPADUCLI} -f ${DIARIO}/hpadu-report
