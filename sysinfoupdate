@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-05-06 22:24:20 +0100 (Sex, 06 Mai 2011) $
+# $Date: 2011-05-16 19:44:20 +0100 (Seg, 16 Mai 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4945 $
+# $Revision: 4952 $
 
 
 
@@ -20,6 +20,14 @@ if test ! -x ${WHICH} ; then
     echo "Which not found in system, using builtin bash version"
     WHICH=which
 fi
+
+function usage () {
+    echo "$0: [fast | slow | all]"
+    echo "The options select what kind of tasks for collecting information"
+    echo "    fast - do fasts tasks for collecting information"
+    echo "    slow - do slow and demanding tasks"
+    echo "    all  - do all the tasks, default action"
+}
 
 function set-command () {
     #echo "$1" "$2"
@@ -127,7 +135,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4945 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4952 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -833,17 +841,29 @@ function hpacucli-update-generic () {
     > ${FILEHPACUCLI}
     echo "upacucli version detected $V => $V1 $V2 $V3" >> ${FILEHPACUCLI}
     echo "Controllers" >> ${FILEHPACUCLI}
+    echo "${HPACUCLI} controller all show" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
 
     echo -n "."
+    echo "${HPACUCLI} controller all show status" >> ${FILEHPACUCLI} 
+    ${HPACUCLI} controller all show status >> ${FILEHPACUCLI} 
+
+    echo -n "."
+    echo "${HPACUCLI} controller all show detail" >> ${FILEHPACUCLI} 
     ${HPACUCLI} controller all show detail >> ${FILEHPACUCLI} 
 
     echo -n "."
+    echo "${HPACUCLI} controller all show config" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show config >> ${FILEHPACUCLI} 
     
     echo -n "."
+    echo "${HPACUCLI} controller all show config detail" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show config detail >> ${FILEHPACUCLI} 
     
+    echo -n "."
+    echo "${HPACUCLI} controller all show ssp" >> ${FILEHPACUCLI} 
+    ${HPACUCLI} controller all show ssp >> ${FILEHPACUCLI} 
+
     rm -rf ${TMPDIR}
 }
 
@@ -1099,26 +1119,35 @@ function services-update () {
     fi
 }
 
-
-if [ -d ${DIARIO} ] ; then
-    echo -n "Updating "
+function update-fast-diario () {
     date
-    hpacucli-update &
-    date
-    ilo-update &
-    date
-    partition-update &
     lvm-update
     date
     md-update
     date
     kernel-boot
     date
-    echo -n "Waiting for demanding tasks"
-    wait
-    echo -n " Done "
-    date
     packages-list-update 
+    date
+    net-update
+    date
+    services-update
+    date
+    kernel-update
+    date
+}
+
+function update-slow-diario () {
+    date
+    hpacucli-update &
+    date
+    ilo-update &
+    date
+    partition-update &
+    echo -n "Waiting for slow tasks"
+    wait
+    echo " Done "
+    echo "Doing demanding tasks"
     date
     hardware-update
     date
@@ -1130,16 +1159,69 @@ if [ -d ${DIARIO} ] ; then
     date
     twcli-update
     date
-    net-update
-    date
-    services-update
-    date
-    kernel-update
-    date
-    echo -n "Waiting for slow tasks"
-    wait
-    echo " Done "
-    date
+}
+
+if [ -d ${DIARIO} ] ; then
+    if test $# -eq 0 ; then
+	update-slow-diario &
+	update-fast-diario &
+	wait
+    else
+	case $1 in
+	    slow)
+		update-slow-diario 
+		;;
+	    fast)
+		update-fast-diario
+		;;
+	    all)
+		update-slow-diario &
+		update-fast-diario &
+		wait
+		;;
+	    *)
+		usage
+	esac
+    fi
+#     echo -n "Updating "
+#     date
+#     hpacucli-update &
+#     date
+#     ilo-update &
+#     date
+#     partition-update &
+#     lvm-update
+#     date
+#     md-update
+#     date
+#     kernel-boot
+#     date
+#     echo -n "Waiting for demanding tasks"
+#     wait
+#     echo -n " Done "
+#     date
+#     packages-list-update 
+#     date
+#     hardware-update
+#     date
+#     video-update
+#     date
+#     ipmi-update 
+
+
+#     date
+#     twcli-update
+#     date
+#     net-update
+#     date
+#     services-update
+#     date
+#     kernel-update
+#     date
+#     echo -n "Waiting for slow tasks"
+#     wait
+#     echo " Done "
+#     date
 else
     echo "Don't exist ${DIARIO} directory, not running"
 fi
