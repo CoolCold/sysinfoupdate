@@ -423,7 +423,7 @@ function hardware-update () {
     cat-file /proc/ide/ide1/channel           ${FILEHARDWARE}
     cat-file /proc/ide/ide1/mate              ${FILEHARDWARE}
     cat-file /proc/ide/ide1/model             ${FILEHARDWARE}
-    for ide in /proc/ide/hda /proc/ide/hdb /proc/ide/hdc /proc/ide/hdd ; do
+    for ide in /proc/ide/hd? ; do
 	if [ -d "${ide}" ] ; then
 	    for file in "${ide}"/* ; do
 		if [ -f "${file}" ] ; then
@@ -540,14 +540,17 @@ function hardware-update () {
 
     set -x
     > ${FILEHDPARM}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj sr0 sr1 sr2 sr3 sr4 cciss/c?d? cciss/disc?/disc ; do
-	${HDPARM}    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${HDPARMSPEED} /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${SDPARM} --all                  /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${SDPARM} --all --long           /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
-	${SDPARM} --all --long --verbose /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+    for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+	if test -r ${disk} ; then
+	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
+	${HDPARM} -i ${disk} >> ${FILEHDPARM}        2> /dev/null
+	${HDPARM} -I ${disk} >> ${FILEHDPARM}        2> /dev/null
+	sleep 1
+	${HDPARMSPEED} ${disk} >> ${FILEHDPARM}      2> /dev/null
+	${SDPARM} --all                  ${disk} >> ${FILEHDPARM} 2> /dev/null
+	${SDPARM} --all --long           ${disk} >> ${FILEHDPARM} 2> /dev/null
+	${SDPARM} --all --long --verbose ${disk} >> ${FILEHDPARM} 2> /dev/null
+	fi
     done
     set +x
 
