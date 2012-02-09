@@ -42,6 +42,8 @@ function md-update () {
     
     mdadm --detail /dev/md* >> ${FILEMD} 2>&1
     cat-file /proc/mdstat      ${FILEMD}
+    cat-file /proc/sys/dev/raid/speed_limit_max ${FILEMD}
+    cat-file /proc/sys/dev/raid/speed_limit_min ${FILEMD}
 }
 
 # $1 - procfile
