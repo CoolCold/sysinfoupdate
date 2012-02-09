@@ -365,12 +365,13 @@ function hardware-update () {
     fi
 
     > ${FILEALSA}
-    cat-file /proc/asound/version ${FILEALSA}
-    cat-file /proc/asound/cards   ${FILEALSA}
-    cat-file /proc/asound/devices ${FILEALSA}
-    cat-file /proc/asound/modules ${FILEALSA}
-    cat-file /proc/asound/pcm     ${FILEALSA}
-    cat-file /proc/asound/timers  ${FILEALSA}
+    for file in /proc/asound/* /proc/asound/*/* /proc/asound/*/*/* /proc/asound/*/*/*/* /proc/asound/*/*/*/*/*  ; do
+	if test -f "${file}" ; then 
+	    cat-file "${file}" ${FILEALSA}
+	else
+	    echo "${file} is not a file" >> ${FILEALSA}
+	fi
+    done
 
     > ${FILEHARDWARE}
     cat-file /proc/cpuinfo                    ${FILEHARDWARE}
