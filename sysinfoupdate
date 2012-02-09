@@ -4,50 +4,80 @@
 DIARIO=${HOME}/diario/
 
 # Define VARS to call commands
-if [ -x /bin/grep ] ; then
-    GREP=/bin/grep
-else 
-    if [ -x /usr/bin/grep ] ; then
-	GREP=/usr/bin/grep
-    else
-	GREP=grep
-    fi
+WHICH=`which which`
+if test ! -x ${WHICH} ; then
+    echo "Which not found in system, using builtin bash version"
+    WHICH=which
 fi
 
-if [ -x /bin/mktemp ] ; then
-    MKTEMP="/bin/mktemp /tmp/tmp.XXXXXXXXXXXX"
-    MKTEMPDIR="/bin/mktemp -d /tmp/tmp.XXXXXXXXXXXX"
-else
-    if [ -x /usr/bin/mktemp ] ; then
-	MKTEMP="/usr/bin/mktemp /tmp/tmp.XXXXXXXXXXXXXXXX"
-	MKTEMPDIR="/usr/bin/mktemp -d /tmp/tmp.XXXXXXXXXXXXXXXX"
+function set-command () {
+    #echo "$1" "$2"
+    x=`eval "expr \"$VAR1\" "`
+    CMD=`eval "$WHICH $2"`
+    #echo "$CMD"
+    if test ! -x "$CMD" ; then
+	echo "$2 not found"
+	if test $# -gt 2; then
+	    exit 1
+	else
+	    CMD=$2
+	fi
     fi
-fi
 
-if [ -x /bin/mount ] ; then
-    MOUNT=/bin/mount
-else
-    if [ -x /sbin/mount ] ; then
-	MOUNT=/sbin/mount
-    else
-	MOUNT=mount
-    fi
-fi
+    eval "$1=$CMD"
+}
 
-if [ -x /sbin/lspci ] ; then
-    LSPCI=/sbin/lspci
-else
-    if [ -x /usr/bin/lspci ] ; then
-	LSPCI=/usr/bin/lspci
-    fi
-    LSPCI=lspci
-fi
+# Define VAR for the used commands
+set-command GREP grep abort
+
+set-command CMKTEMP mktemp abort
+MKTEMP="${CMKTEMP} /tmp/tmp.XXXXXXXXXXXX"
+MKTEMPDIR="${CMKTEMP} -d /tmp/tmp.XXXXXXXXXXXX"
+
+set-command MOUNT mount
+set-command LSPCI lspci
+set-command CAT cat
+set-command RPM rpm
+set-command FDISK fdisk
+set-command PARTED parted
+set-command GDISK gdisk
+set-command CP cp
+set-command DF df
+set-command DMSETUP dmsetup
+set-command VGDISPLAY vgdisplay
+set-command LVDISPLAY lvdisplay
+set-command PVDISPLAY pvdisplay
+set-command MDADM mdadm
+set-command LSMOD lsmod
+set-command FREE free
+set-command VMSTAT vmstat
+set-command DMESG dmesg
+set-command HEAD head
+set-command CUT cut
+set-command LSUSB lsusb
+set-command HDPARM hdparm
+set-command SDPARM sdparm
+set-command HPADUCLI hpaducli
+set-command HPASMCLI hpasmcli
+set-command HPACUCLI hpacucli
+set-command PRTCONF prtconf
+set-command EEPROM eeprom
+set-command HWINFO hwinfo
+set-command DDCPROBE ddcprobe
+set-command GETEDID get-edid
+set-command PARSEEDID parse-edid
+set-command IPMITOOL ipmitool
+set-command TWCLI tw_cli
+set-command IFCONFIG ifconfig
+set-command ROUTE route
+set-command IP ip
+set-command NETSTAT netstat
+set-command NTPQ ntpq
+set-command HWCLOCK hwclock
 
 # $1 - procfile
 # $2 - File to log
 function cat-file () {
-    CAT=/bin/cat
-
     echo $1 >> $2
     if [ -e $1 ] ; then
 	${CAT} $1 >> $2
@@ -90,7 +120,7 @@ function packages-list-update () {
 	COLUMNS=175 dpkg --list >> "${FILE}"
 	echo >> "${FILE}"
 	echo "rpm packages installed" >> "${FILE}"
-	rpm -q -a >> "${FILE}" 2>&1
+	${RPM} -q -a >> "${FILE}" 2>&1
 	echo >> "${FILE}"
 	echo "Java alternatives" >> "${FILE}"
 	update-java-alternatives -l >> "${FILE}"
@@ -102,11 +132,11 @@ function packages-list-update () {
 }
 
 function partition-update () {
-    FDISK=/sbin/fdisk
-    PARTED=/sbin/parted
-    GDISK=/sbin/gdisk
-    CP=/bin/cp
-    DF=/bin/df
+#     FDISK=/sbin/fdisk
+#     PARTED=/sbin/parted
+#     GDISK=/sbin/gdisk
+#     CP=/bin/cp
+#     DF=/bin/df
     FILEPART=${DIARIO}/part-list
     FILEFSTAB=${DIARIO}/fstab
     FILEFS=${DIARIO}/fs-list
@@ -152,10 +182,10 @@ function partition-update () {
 }
 
 function lvm-update () {
-    DMSETUP=/sbin/dmsetup
-    VGDISPLAY=/sbin/vgdisplay
-    LVDISPLAY=/sbin/lvdisplay
-    PVDISPLAY=/sbin/pvdisplay
+#     DMSETUP=/sbin/dmsetup
+#     VGDISPLAY=/sbin/vgdisplay
+#     LVDISPLAY=/sbin/lvdisplay
+#     PVDISPLAY=/sbin/pvdisplay
     FILELVM=${DIARIO}/lvm-list
     > ${FILELVM}
 
@@ -181,7 +211,7 @@ function lvm-update () {
 }
 
 function md-update () {
-    MDADM=/sbin/mdadm
+#    MDADM=/sbin/mdadm
     FILEMD=${DIARIO}/md-list
     > ${FILEMD}
 
@@ -198,10 +228,10 @@ function md-update () {
 function kernel-update () {
     FILEKERNEL=${DIARIO}/kernel-list
     FILEPROCSYS=${DIARIO}/procsys-list
-    CAT=/bin/cat
-    LSMOD=/sbin/lsmod
-    FREE=/usr/bin/free
-    VMSTAT=/usr/bin/vmstat
+#     CAT=/bin/cat
+#     LSMOD=/sbin/lsmod
+#     FREE=/usr/bin/free
+#     VMSTAT=/usr/bin/vmstat
     AFSD1=/usr/sbin/afsd
     AFSD2=/sbin/afsd
 
@@ -298,10 +328,10 @@ function kernel-boot () {
     FILEKERNELBOOT=${DIARIO}/kernel-boot
     DMESGLOG=/var/log/dmesg
     KERNELLOG=/var/log/kern.log
-    DMESG=/bin/dmesg
-    HEAD=/usr/bin/head
-    CP=/bin/cp
-    CUT=/usr/bin/cut
+#     DMESG=/bin/dmesg
+#     HEAD=/usr/bin/head
+#     CP=/bin/cp
+#     CUT=/usr/bin/cut
 
     echo -n "."
     case $OSTYPE in
@@ -341,20 +371,20 @@ function kernel-boot () {
 }
 
 function hardware-update () {
-    LSUSB=/usr/bin/lsusb
-    HDPARM=/sbin/hdparm
-    SDPARM=/usr/bin/sdparm
+#     LSUSB=/usr/bin/lsusb
+#     HDPARM=/sbin/hdparm
+#     SDPARM=/usr/bin/sdparm
     FILEPCI=${DIARIO}/pci-list
     FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
     FILEHWINFO=${DIARIO}/hwinfo-list
-    HPADUCLI=/usr/sbin/hpaducli
-    HPASMCLI=/sbin/hpasmcli
-    PRTCONF=/usr/sbin/prtconf
-    EEPROM=/usr/sbin/eeprom
-    HWINFO=/usr/sbin/hwinfo
+#     HPADUCLI=/usr/sbin/hpaducli
+#     HPASMCLI=/sbin/hpasmcli
+#     PRTCONF=/usr/sbin/prtconf
+#     EEPROM=/usr/sbin/eeprom
+#     HWINFO=/usr/sbin/hwinfo
 
     HDPARMSPEED="${HDPARM} -tT"
     if test -x /usr/bin/nice ; then
@@ -581,10 +611,10 @@ function hardware-update () {
 
 function video-update () {
     FILEVIDEO=${DIARIO}/video-list
-    DDCPROBE=/usr/sbin/ddcprobe
-    GETEDID=/usr/bin/get-edid
-    PARSEEDID=/usr/bin/parse-edid
-    HWINFO=/usr/sbin/hwinfo
+#     DDCPROBE=/usr/sbin/ddcprobe
+#     GETEDID=/usr/bin/get-edid
+#     PARSEEDID=/usr/bin/parse-edid
+#     HWINFO=/usr/sbin/hwinfo
 
     > ${FILEVIDEO}
     
@@ -609,7 +639,7 @@ function video-update () {
 
 
 function ipmi-update () {
-    IPMITOOL=/usr/bin/ipmitool
+#     IPMITOOL=/usr/bin/ipmitool
     FILEIPMI=${DIARIO}/ipmi-report
 
     if test ! -e /dev/ipmi0 ; then
@@ -662,7 +692,7 @@ function hpacucli-update-8.0 () {
 }
 
 function hpacucli-update-7.85 () {
-    HPACUCLI=/usr/sbin/hpacucli
+#     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
     TMPDIR=`${MKTEMPDIR}`
 
@@ -737,7 +767,7 @@ function hpacucli-update-7.85 () {
 }
 
 function hpacucli-update-generic () {
-    HPACUCLI=/usr/sbin/hpacucli
+#     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
     TMPDIR=`${MKTEMPDIR}`
 
@@ -771,7 +801,7 @@ function hpacucli-update-generic () {
 
 
 function hpacucli-update () {
-    HPACUCLI=/usr/sbin/hpacucli
+#     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
     TMPDIR=`${MKTEMPDIR}`
 
@@ -819,11 +849,11 @@ function twcli-update () {
     FILETWCLI=${DIARIO}/twcli-report
     
 
-    if test -x /usr/sbin/tw_cli ; then
-	TWCLI=/usr/sbin/tw_cli
-    else
-	TWCLI=twcli
-    fi
+#     if test -x /usr/sbin/tw_cli ; then
+# 	TWCLI=/usr/sbin/tw_cli
+#     else
+# 	TWCLI=twcli
+#     fi
 
     if ! which ${TWCLI} > /dev/null ; then
 	return
@@ -855,10 +885,10 @@ function twcli-update () {
 
 function net-update () {
     FILENET=${DIARIO}/net-list
-    IFCONFIG=/sbin/ifconfig
-    ROUTE=/sbin/route
-    IP=/sbin/ip
-    NETSTAT=/bin/netstat
+#     IFCONFIG=/sbin/ifconfig
+#     ROUTE=/sbin/route
+#     IP=/sbin/ip
+#     NETSTAT=/bin/netstat
     
     echo -n "."
     > ${FILENET}
@@ -974,8 +1004,8 @@ function net-update () {
 
 function services-update () {
     FILESERVICES=${DIARIO}/services
-    NTPQ=/usr/bin/ntpq
-    HWCLOCK=/sbin/hwclock
+#     NTPQ=/usr/bin/ntpq
+#     HWCLOCK=/sbin/hwclock
 
     echo -n "."
     > ${FILESERVICES}
