@@ -62,21 +62,33 @@ function kernel-update () {
     FILEKERNEL=${DIARIO}/kernel-list
     CAT=/bin/cat
     LSMOD=/sbin/lsmod
+    FREE=/usr/bin/free
 
     >${FILEKERNEL}
-    cat-file /proc/version  ${FILEKERNEL}
-    cat-file /proc/cmdline  ${FILEKERNEL}
-    cat-file /proc/devices  ${FILEKERNEL}
-    ${LSMOD}             >> ${FILEKERNEL}
-    echo                 >> ${FILEKERNEL}
-    cat-file /proc/fb       ${FILEKERNEL}
-    cat-file /proc/locks    ${FILEKERNEL}
-    cat-file /proc/lvm/global ${FILEKERNEL}
-    cat-file /proc/swaps    ${FILEKERNEL}
+    cat-file /proc/version     ${FILEKERNEL}
+    cat-file /proc/cmdline     ${FILEKERNEL}
+    cat-file /proc/crypto      ${FILEKERNEL}
+    cat-file /proc/devices     ${FILEKERNEL}
+    ${LSMOD}             >>    ${FILEKERNEL}
+    echo                 >>    ${FILEKERNEL}
+    cat-file /proc/fb          ${FILEKERNEL}
+    cat-file /proc/locks       ${FILEKERNEL}
+    cat-file /proc/execdomains ${FILEKERNEL}
+    echo "free"          >>    ${FILEKERNEL}
+    ${FREE}              >>    ${FILEKERNEL}
+    cat-file /proc/meminfo     ${FILEKERNEL}
+    cat-file /proc/mtrr        ${FILEKERNEL}
+    cat-file /proc/lvm/global  ${FILEKERNEL}
+    cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
-    echo "OpenAFS client" >> ${FILEKERNEL}
+    echo "OpenAFS client" >>   ${FILEKERNEL}
     rxdebug localhost 7001 -version >> ${FILEKERNEL}
     cmdebug localhost -cache >> ${FILEKERNEL}
+    echo "/proc/sys"         >> ${FILEKERNEL}
+    cat-file /proc/sys/kernel/randomize_va_space ${FILEKERNEL}
+    cat-file /proc/sys/kernel/tainted            ${FILEKERNEL}
+    cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
+    cat-file /proc/sys/kernel/random/poolsize    ${FILEKERNEL}
 }
 
 function hardware-update () {
@@ -101,6 +113,7 @@ function hardware-update () {
     ${LSPCI} -vv       >> ${FILEPCI}
     cat-file /proc/pci    ${FILEPCI}
     ${LSPCI} -x         > ${FILEPCI}-x
+    cat-file /proc/bus/pci/devices ${FILEPCI}-x
     
     > ${FILEALSA}
     cat-file /proc/asound/version ${FILEALSA}
@@ -123,6 +136,7 @@ function hardware-update () {
     cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
     echo                               >> ${FILEHARDWARE}
     cat-file /proc/bus/input/devices      ${FILEHARDWARE}
+    cat-file /proc/bus/input/handlers     ${FILEHARDWARE}
     cat-file /proc/bus/ieee1394/devices   ${FILEHARDWARE}
     cat-file /proc/bus/usb/devices        ${FILEHARDWARE}
     cat-file /proc/bus/usb/drivers        ${FILEHARDWARE}
@@ -189,7 +203,22 @@ function net-update () {
     ${IP} -6 route         >> ${FILENET}
     echo "ip tunnel"       >> ${FILENET}
     ${IP} tunnel           >> ${FILENET}
-    cat-file /proc/net/dev    ${FILENET}
+    cat-file /proc/net/dev         ${FILENET}
+    cat-file /proc/net/dev_mcast   ${FILENET}
+    cat-file /proc/net/protocols   ${FILENET}
+    cat-file /proc/sys/net/ipv4/ip_forward                  ${FILENET}
+    cat-file /proc/sys/net/ipv4/neigh/default/gc_interval   ${FILENET}
+    cat-file /proc/sys/net/ipv4/neigh/default/gc_stale_time ${FILENET} 
+    cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh1    ${FILENET}
+    cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh2    ${FILENET}
+    cat-file /proc/sys/net/ipv4/neigh/default/gc_thresh3    ${FILENET}
+    cat-file /proc/sys/net/ipv6/conf/all/forwarding         ${FILENET}
+    cat-file /proc/sys/net/ipv6/conf/all/mtu                ${FILENET}
+    cat-file /proc/sys/net/ipv6/neigh/default/gc_interval   ${FILENET}
+    cat-file /proc/sys/net/ipv6/neigh/default/gc_stale_time ${FILENET} 
+    cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh1    ${FILENET}
+    cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh2    ${FILENET}
+    cat-file /proc/sys/net/ipv6/neigh/default/gc_thresh3    ${FILENET}
 }
 
 
