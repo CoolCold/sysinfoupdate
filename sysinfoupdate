@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 21:30:24 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 21:34:04 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2159 $ Calhariz
+# $Revision: 2160 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2159 $ Calhariz'
+VERSION=' $Revision: 2160 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -814,17 +814,29 @@ function hpacucli-update-generic () {
     > ${FILEHPACUCLI}
     echo "upacucli version detected $V => $V1 $V2 $V3" >> ${FILEHPACUCLI}
     echo "Controllers" >> ${FILEHPACUCLI}
+    echo "${HPACUCLI} controller all show" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
 
     echo -n "."
+    echo "${HPACUCLI} controller all show status" >> ${FILEHPACUCLI} 
+    ${HPACUCLI} controller all show status >> ${FILEHPACUCLI} 
+
+    echo -n "."
+    echo "${HPACUCLI} controller all show detail" >> ${FILEHPACUCLI} 
     ${HPACUCLI} controller all show detail >> ${FILEHPACUCLI} 
 
     echo -n "."
+    echo "${HPACUCLI} controller all show config" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show config >> ${FILEHPACUCLI} 
     
     echo -n "."
+    echo "${HPACUCLI} controller all show config detail" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show config detail >> ${FILEHPACUCLI} 
     
+    echo -n "."
+    echo "${HPACUCLI} controller all show ssp" >> ${FILEHPACUCLI} 
+    ${HPACUCLI} controller all show ssp >> ${FILEHPACUCLI} 
+
     rm -rf ${TMPDIR}
 }
 
