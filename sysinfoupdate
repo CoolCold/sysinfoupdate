@@ -4,17 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-11-25 15:02:20 +0000 (Sex, 25 Nov 2011) $
+# $Date: 2011-12-17 23:43:53 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 5390 $ CIIST
-
+# $Revision: 5435 $ CIIST
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 5390 $ CIIST'
+VERSION=' $Revision: 5435 $ CIIST'
 
 echo "$PROG" "$VERSION"
 
