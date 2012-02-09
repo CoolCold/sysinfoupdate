@@ -21,6 +21,7 @@ function packages-list-update () {
     FILE="${DIARIO}/packages-list"
 
     if [ -d "${DIARIO}" ] ; then
+	echo -n "."
 	COLUMNS=132 dpkg --list > "${FILE}"
     fi
 
@@ -32,8 +33,9 @@ function partition-update () {
     FILEPART=${DIARIO}/part-list
     FILEFSTAB=${DIARIO}/fstab
 
+    echo -n "."
     > ${FILEPART}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh cciss/c?d? cciss/disc?/disc ; do
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
 	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
     
@@ -45,8 +47,11 @@ function lvm-update () {
     FILELVM=${DIARIO}/lvm-list
     > ${FILELVM}
 
-    ${VGDISPLAY} --short   >> ${FILELVM} 2>&1
-    ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
+    echo -n "."
+    if [ -x ${VGDISPLAY} ] ; then
+	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
+	${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
+    fi
 }
 
 function md-update () {
@@ -54,7 +59,11 @@ function md-update () {
     FILEMD=${DIARIO}/md-list
     > ${FILEMD}
     
-    mdadm --detail /dev/md* >> ${FILEMD} 2>&1
+    echo -n "."
+    if [ ! -x ${MDADM} ] ; then
+	return
+    fi
+    ${MDADM} mdadm --detail /dev/md* >> ${FILEMD} 2>&1
     cat-file /proc/mdstat      ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_max ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_min ${FILEMD}
@@ -66,6 +75,7 @@ function kernel-update () {
     LSMOD=/sbin/lsmod
     FREE=/usr/bin/free
 
+    echo -n "."
     >${FILEKERNEL}
     cat-file /proc/version     ${FILEKERNEL}
     cat-file /proc/cmdline     ${FILEKERNEL}
@@ -84,8 +94,12 @@ function kernel-update () {
     cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
     echo "OpenAFS client"           >> ${FILEKERNEL}
-    rxdebug localhost 7001 -version >> ${FILEKERNEL}
-    cmdebug localhost -cache        >> ${FILEKERNEL}
+    if which rxdebug > /dev/null ; then
+	rxdebug localhost 7001 -version >> ${FILEKERNEL}
+    fi
+    if which cmdebug > /dev/null ; then
+	cmdebug localhost -cache        >> ${FILEKERNEL}
+    fi
     echo "/proc/sys"                            >> ${FILEKERNEL}
     cat-file /proc/sys/kernel/randomize_va_space   ${FILEKERNEL}
     cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
@@ -101,6 +115,7 @@ function kernel-boot () {
     MKTEMP=/bin/mktemp
     CP=/bin/cp
     
+    echo -n "."
     TMPFILE=`mktemp`
     $DMESG > ${TMPFILE}
     if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
@@ -118,28 +133,37 @@ function kernel-boot () {
 
 function hardware-update () {
     LSPCI=/usr/bin/lspci
+    LSUSB=/usr/bin/lsusb
     HDPARM=/sbin/hdparm
     FILEPCI=${DIARIO}/pci-list
+    FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
     HPADUCLI=/usr/sbin/hpaducli
     HPASMCLI=/sbin/hpasmcli
-    HPACUCLI=/usr/sbin/hpacucli
     
+    echo -n "."
     > ${FILEPCI}
     echo "#################### lspci "      >> ${FILEPCI}
-    ${LSPCI}           >> ${FILEPCI}
+    ${LSPCI}                                >> ${FILEPCI}
     echo "#################### lspci -tv"   >> ${FILEPCI}
-    ${LSPCI} -tv       >> ${FILEPCI}
+    ${LSPCI} -tv                            >> ${FILEPCI}
     echo "#################### lspci -v"    >> ${FILEPCI}
-    ${LSPCI} -v        >> ${FILEPCI}
+    ${LSPCI} -v                             >> ${FILEPCI}
     echo "#################### lspci -vv"   >> ${FILEPCI}
-    ${LSPCI} -vv       >> ${FILEPCI}
-    cat-file /proc/pci    ${FILEPCI}
-    ${LSPCI} -x                  > ${FILEPCI}-x
-    cat-file /proc/bus/pci/devices ${FILEPCI}-x
+    ${LSPCI} -vv                            >> ${FILEPCI}
+    cat-file /proc/pci                         ${FILEPCI}
+    ${LSPCI} -x                              > ${FILEPCI}-x
+    cat-file /proc/bus/pci/devices             ${FILEPCI}-x
     
+    > ${FILEUSB}
+    if [ -x ${LSUSB} ] ; then
+	${LSUSB}                            >> ${FILEUSB}
+	${LSUSB} -t                         >> ${FILEUSB} 2>&1
+	${LSUSB} -v                         >> ${FILEUSB}
+    fi
+
     > ${FILEALSA}
     cat-file /proc/asound/version ${FILEALSA}
     cat-file /proc/asound/cards   ${FILEALSA}
@@ -184,26 +208,94 @@ function hardware-update () {
     
 
     > ${FILEHDPARM}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh cciss/c?d? cciss/disc?/disc ; do
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
 	${HDPARM}    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
     
-    ${HPADUCLI} -f ${DIARIO}/hpadu-report
-    ${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
-
-    ${HPACUCLI} controller all show > ${DIARIO}/hpacucli-report 
-
-    ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} ld all show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} pd all show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} ld all show  >> ${DIARIO}/hpacucli-report
-    ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} pd all show  >> ${DIARIO}/hpacucli-report
-    
-    
+    if [ -x ${HPADUCLI} ] ; then
+	${HPADUCLI} -f ${DIARIO}/hpadu-report
+    fi
+    if [ -x ${HPASMCLI} ] ;then
+	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+    fi
 }
+
+function hpacucli-update () {
+    HPACUCLI=/usr/sbin/hpacucli
+    FILEHPACUCLI=${DIARIO}/hpacucli-report
+    TMPDIR=`mktemp -d`
+
+    echo -n "."
+    if [ ! -x ${HPACUCLI} ] ; then
+	return
+    fi
+    > ${FILEHPACUCLI}
+    echo "Controllers" >> ${FILEHPACUCLI}
+    ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
+
+    echo -n "."
+    cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${FILEHPACUCLI}
+    cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${FILEHPACUCLI}
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
+	echo -n "."
+ 	echo "Discs of controller in Slot $target" >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller slot=${target} array all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-array >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller slot=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-ld >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller slot=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-pd >> ${FILEHPACUCLI}
+    done
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
+	echo -n "."
+ 	echo "Discs of controller at $target" >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} array all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-array >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-ld >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-pd >> ${FILEHPACUCLI}
+    done
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
+	echo -n "."
+ 	echo "Detail of discs in Slot $target" >> ${FILEHPACUCLI}
+	for array in `grep -h "  array " ${TMPDIR}/hpacucli-controller-slot-${target}-array | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller slot=${target} array $array show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for ld in `grep -h "  logicaldrive " ${TMPDIR}/hpacucli-controller-slot-${target}-ld | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller slot=${target} ld $ld show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for pd in `grep -h "  physicaldrive " ${TMPDIR}/hpacucli-controller-slot-${target}-pd | awk '{print $2}'` ; do
+	    #echo $pd
+	    ${HPACUCLI} controller slot=${target} pd $pd show >> ${FILEHPACUCLI}
+	done
+    done
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
+	echo -n "."
+ 	echo "Detail of discs at $target" >> ${FILEHPACUCLI}
+	for array in `grep -h array ${TMPDIR}/hpacucli-controller-at-${target}-array | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller ch=${target} array $array show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for ld in `grep -h logicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-ld | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller ch=${target} ld $ld show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for pd in `grep -h physicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-pd | awk '{print $2}'` ; do
+	    #echo $pd
+	    ${HPACUCLI} controller ch=${target} pd $pd show >> ${FILEHPACUCLI}
+	done
+    done
+}
+
+
+
 
 function net-update () {
     FILENET=${DIARIO}/net-list
@@ -211,6 +303,7 @@ function net-update () {
     ROUTE=/sbin/route
     IP=/sbin/ip
     
+    echo -n "."
     > ${FILENET}
     echo "ifconfig"        >> ${FILENET}
     ${IFCONFIG}            >> ${FILENET}
@@ -248,6 +341,7 @@ function net-update () {
 
 
 if [ -d ${DIARIO} ] ; then
+    echo -n "Updating "
     packages-list-update
     partition-update
     lvm-update
@@ -255,7 +349,9 @@ if [ -d ${DIARIO} ] ; then
     kernel-update
     kernel-boot
     hardware-update
+    hpacucli-update
     net-update
+    echo " Done"
 else
     echo "Don't exist ${DIARIO} directory, not running"
 fi
