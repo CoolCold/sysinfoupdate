@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 
