@@ -64,10 +64,14 @@ function echo_execute () {
     OUTPUT=$1
     shift
     NAME=`basename $1`
-    COMMAND=$1
+    COMMAND="$1"
     shift
     echo $NAME $* >> ${OUTPUT}
-    $COMMAND $* >> ${OUTPUT}
+    if test -x "$COMMAND" ; then
+	$COMMAND $* >> ${OUTPUT}
+    else
+	echo "$COMMAND is not executable" >> ${OUTPUT}
+    fi
     echo >> ${OUTPUT}
 }
 
