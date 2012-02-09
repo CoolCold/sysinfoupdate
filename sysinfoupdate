@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-05-16 21:07:48 +0100 (Seg, 16 Mai 2011) $
+# $Date: 2011-05-18 20:16:30 +0100 (Qua, 18 Mai 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4956 $
+# $Revision: 4964 $
 
 
 
@@ -135,7 +135,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4956 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4964 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -400,27 +400,15 @@ function kernel-boot () {
 
 function hardware-update () {
 #     LSUSB=/usr/bin/lsusb
-#     HDPARM=/sbin/hdparm
 #     SDPARM=/usr/bin/sdparm
     FILEPCI=${DIARIO}/pci-list
     FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
-    FILEHDPARM=${DIARIO}/hdparm-list
-    FILEHWINFO=${DIARIO}/hwinfo-list
 #     HPADUCLI=/usr/sbin/hpaducli
 #     HPASMCLI=/sbin/hpasmcli
 #     PRTCONF=/usr/sbin/prtconf
 #     EEPROM=/usr/sbin/eeprom
-#     HWINFO=/usr/sbin/hwinfo
-
-    HDPARMSPEED="${HDPARM} -tT"
-    if test -x /usr/bin/nice ; then
-	HDPARMSPEED="/usr/bin/nice --20 $HDPARMSPEED"
-    fi
-    if test -x /usr/bin/ionice ; then
-	HDPARMSPEED="/usr/bin/ionice -c 1 $HDPARMSPEED"
-    fi
 
     echo -n "."
     > ${FILEPCI}
@@ -596,6 +584,37 @@ function hardware-update () {
        fi
     done
 
+    if [ -x ${HPADUCLI} ] ; then
+	${HPADUCLI} -f ${DIARIO}/hpadu-report
+    fi
+    if [ -x ${HPASMCLI} ] ;then
+	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+    fi
+
+    if [ -x $PRTCONF ] ; then
+	echo_execute ${FILEHARDWARE} $PRTCONF ""
+	echo                        >> ${FILEHARDWARE}
+	echo_execute ${FILEHARDWARE} $PRTCONF -p 
+    fi
+
+    if [ -x $EEPROM ] ; then
+	echo_execute ${FILEHARDWARE} $EEPROM ""
+    fi
+
+}
+
+function hdparm-update () {
+#     HDPARM=/sbin/hdparm
+    FILEHDPARM=${DIARIO}/hdparm-list
+
+    HDPARMSPEED="${HDPARM} -tT"
+    if test -x /usr/bin/nice ; then
+	HDPARMSPEED="/usr/bin/nice --20 $HDPARMSPEED"
+    fi
+    if test -x /usr/bin/ionice ; then
+	HDPARMSPEED="/usr/bin/ionice -c 1 $HDPARMSPEED"
+    fi
+
     #set -x
     > ${FILEHDPARM}
     for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
@@ -640,30 +659,17 @@ function hardware-update () {
 	fi
     done
     #set +x
+}
 
-    if [ -x ${HPADUCLI} ] ; then
-	${HPADUCLI} -f ${DIARIO}/hpadu-report
-    fi
-    if [ -x ${HPASMCLI} ] ;then
-	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
-    fi
-
-    if [ -x $PRTCONF ] ; then
-	echo_execute ${FILEHARDWARE} $PRTCONF ""
-	echo                        >> ${FILEHARDWARE}
-	echo_execute ${FILEHARDWARE} $PRTCONF -p 
-    fi
-
-    if [ -x $EEPROM ] ; then
-	echo_execute ${FILEHARDWARE} $EEPROM ""
-    fi
+function hwinfo-update () {
+    FILEHWINFO=${DIARIO}/hwinfo-list
+#     HWINFO=/usr/sbin/hwinfo
 
     echo -n "."
     > ${FILEHWINFO}
     echo_execute ${FILEHWINFO}  ${HWINFO} "--short"
     echo_execute ${FILEHWINFO}  ${HWINFO} ""
 }
-
 
 function video-update () {
     FILEVIDEO=${DIARIO}/video-list
@@ -1131,6 +1137,10 @@ function update-fast-diario () {
     date
     kernel-boot
     date
+    echo -n "  hardware begin   "
+    hardware-update
+    echo -n "  hardware finished  "
+    date
     packages-list-update 
     date
     net-update
@@ -1156,9 +1166,12 @@ function update-slow-diario () {
     date
     echo "Doing demanding tasks"
     date
-    hardware-update
+    hwinfo-update
     echo
-    echo -n "hardware-update " 
+    echo -n "hwinfo-update " 
+    hdparm-update
+    echo
+    echo -n "hdparm-update " 
     date
     video-update
     echo
