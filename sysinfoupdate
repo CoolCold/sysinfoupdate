@@ -134,8 +134,10 @@ function kernel-boot () {
 
 function hardware-update () {
     LSPCI=/usr/bin/lspci
+    LSUSB=/usr/bin/lsusb
     HDPARM=/sbin/hdparm
     FILEPCI=${DIARIO}/pci-list
+    FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
@@ -145,17 +147,24 @@ function hardware-update () {
     echo -n "."
     > ${FILEPCI}
     echo "#################### lspci "      >> ${FILEPCI}
-    ${LSPCI}           >> ${FILEPCI}
+    ${LSPCI}                                >> ${FILEPCI}
     echo "#################### lspci -tv"   >> ${FILEPCI}
-    ${LSPCI} -tv       >> ${FILEPCI}
+    ${LSPCI} -tv                            >> ${FILEPCI}
     echo "#################### lspci -v"    >> ${FILEPCI}
-    ${LSPCI} -v        >> ${FILEPCI}
+    ${LSPCI} -v                             >> ${FILEPCI}
     echo "#################### lspci -vv"   >> ${FILEPCI}
-    ${LSPCI} -vv       >> ${FILEPCI}
-    cat-file /proc/pci    ${FILEPCI}
-    ${LSPCI} -x                  > ${FILEPCI}-x
-    cat-file /proc/bus/pci/devices ${FILEPCI}-x
+    ${LSPCI} -vv                            >> ${FILEPCI}
+    cat-file /proc/pci                         ${FILEPCI}
+    ${LSPCI} -x                              > ${FILEPCI}-x
+    cat-file /proc/bus/pci/devices             ${FILEPCI}-x
     
+    > ${FILEUSB}
+    if [ -x ${LSUSB} ] ; then
+	${LSUSB}                            >> ${FILEUSB}
+	${LSUSB} -t                         >> ${FILEUSB} 2>&1
+	${LSUSB} -v                         >> ${FILEUSB}
+    fi
+
     > ${FILEALSA}
     cat-file /proc/asound/version ${FILEALSA}
     cat-file /proc/asound/cards   ${FILEALSA}
