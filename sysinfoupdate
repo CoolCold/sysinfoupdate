@@ -20,7 +20,9 @@ function cat-file () {
 function packages-list-update () {
     FILE="${DIARIO}/packages-list"
 
+
     if [ -d "${DIARIO}" ] ; then
+	echo -n "."
 	COLUMNS=132 dpkg --list > "${FILE}"
     fi
 
@@ -32,6 +34,7 @@ function partition-update () {
     FILEPART=${DIARIO}/part-list
     FILEFSTAB=${DIARIO}/fstab
 
+    echo -n "."
     > ${FILEPART}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh cciss/c?d? cciss/disc?/disc ; do
 	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
@@ -45,6 +48,7 @@ function lvm-update () {
     FILELVM=${DIARIO}/lvm-list
     > ${FILELVM}
 
+    echo -n "."
     ${VGDISPLAY} --short   >> ${FILELVM} 2>&1
     ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
 }
@@ -54,6 +58,7 @@ function md-update () {
     FILEMD=${DIARIO}/md-list
     > ${FILEMD}
     
+    echo -n "."
     mdadm --detail /dev/md* >> ${FILEMD} 2>&1
     cat-file /proc/mdstat      ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_max ${FILEMD}
@@ -66,6 +71,7 @@ function kernel-update () {
     LSMOD=/sbin/lsmod
     FREE=/usr/bin/free
 
+    echo -n "."
     >${FILEKERNEL}
     cat-file /proc/version     ${FILEKERNEL}
     cat-file /proc/cmdline     ${FILEKERNEL}
@@ -101,6 +107,7 @@ function kernel-boot () {
     MKTEMP=/bin/mktemp
     CP=/bin/cp
     
+    echo -n "."
     TMPFILE=`mktemp`
     $DMESG > ${TMPFILE}
     if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
@@ -125,8 +132,8 @@ function hardware-update () {
     FILEHDPARM=${DIARIO}/hdparm-list
     HPADUCLI=/usr/sbin/hpaducli
     HPASMCLI=/sbin/hpasmcli
-    HPACUCLI=/usr/sbin/hpacucli
     
+    echo -n "."
     > ${FILEPCI}
     echo "#################### lspci "      >> ${FILEPCI}
     ${LSPCI}           >> ${FILEPCI}
@@ -192,18 +199,24 @@ function hardware-update () {
     
     ${HPADUCLI} -f ${DIARIO}/hpadu-report
     ${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
+}
 
+function hpacucli-update () {
+    HPACUCLI=/usr/sbin/hpacucli
+    FILEHPACUCLI=${DIARIO}/hpacucli-report
+
+    echo -n "."
     ${HPACUCLI} controller all show > ${DIARIO}/hpacucli-report 
-
     ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${DIARIO}/hpacucli-report
     ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${DIARIO}/hpacucli-report
     ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} ld all show  >> ${DIARIO}/hpacucli-report
     ${HPACUCLI} controller all show | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} pd all show  >> ${DIARIO}/hpacucli-report
     ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} ld all show  >> ${DIARIO}/hpacucli-report
     ${HPACUCLI} controller all show | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} pd all show  >> ${DIARIO}/hpacucli-report
-    
-    
 }
+
+
+
 
 function net-update () {
     FILENET=${DIARIO}/net-list
@@ -211,6 +224,7 @@ function net-update () {
     ROUTE=/sbin/route
     IP=/sbin/ip
     
+    echo -n "."
     > ${FILENET}
     echo "ifconfig"        >> ${FILENET}
     ${IFCONFIG}            >> ${FILENET}
@@ -248,6 +262,7 @@ function net-update () {
 
 
 if [ -d ${DIARIO} ] ; then
+    echo -n "Updating "
     packages-list-update
     partition-update
     lvm-update
@@ -255,7 +270,9 @@ if [ -d ${DIARIO} ] ; then
     kernel-update
     kernel-boot
     hardware-update
+    hpacucli-update
     net-update
+    echo " Done"
 else
     echo "Don't exist ${DIARIO} directory, not running"
 fi
