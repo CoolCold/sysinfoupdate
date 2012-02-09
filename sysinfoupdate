@@ -104,11 +104,15 @@ function kernel-boot () {
     if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
 	${CP} ${TMPFILE} ${FILEKERNELBOOT}
     else
-	echo "Could not find initial kernel boot message"
-	echo "See if /var/log/dmesg is better that dmesg alone"
+	if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
+	    ${CP} /var/log/dmesg ${FILEKERNELBOOT}
+	else
+	    echo "Could not find initial kernel boot message," 
+	    echo "and /var/log/dmesg did not help."
+	    echo "See if exist an alternative."
+	fi
     fi
 }
-
 
 function hardware-update () {
     LSPCI=/usr/bin/lspci
