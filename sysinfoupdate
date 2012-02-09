@@ -102,7 +102,7 @@ function echo_execute () {
     shift
     echo $NAME $* >> ${OUTPUT}
     if test -x "$COMMAND" ; then
-	$COMMAND $* >> ${OUTPUT}
+	$COMMAND $* >> ${OUTPUT} 2>&1
     else
 	echo "$COMMAND is not executable" >> ${OUTPUT}
     fi
@@ -148,7 +148,9 @@ function partition-update () {
     echo -n "."
     > ${FILEPART}
     for disk in /dev/hd? /dev/sd? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
+	echo -n "${disk} "
 	if test -r ${disk} ; then
+	echo -n "${disk} "
 	    echo_execute ${FILEPART} ${FDISK} -l ${disk} 2> /dev/null
 	    echo_execute ${FILEPART} ${GDISK} -l ${disk}
 	    echo_execute ${FILEPART} ${PARTED} ${disk} print unit s print
@@ -171,15 +173,15 @@ function partition-update () {
 	    echo_execute ${FILEFS} ${MOUNT} -l
 	    ;;
 	darwin8.0)
-	    ${MOUNT}                            >> ${FILEFS}
+	    echo_execute ${FILEFS} ${MOUNT}
 	    ;;
 	*)
-	    ${MOUNT}                            >> ${FILEFS}	
+	    echo_execute ${FILEFS} ${MOUNT}
     esac
     echo "size of filesystems df -h"    >> ${FILEFS}
-    ${DF} -h                            >> ${FILEFS}
+    echo_execute ${FILEFS} ${DF} -h
     echo "inodes of filesystems df -iH" >> ${FILEFS}
-    ${DF} -iH                           >> ${FILEFS}   
+    echo_execute ${FILEFS} ${DF} -iH
     
     ${CP} /etc/fstab ${FILEFSTAB}
 }
@@ -590,14 +592,21 @@ function hardware-update () {
     for disk in /dev/hd? /dev/sd? /dev/sr? /dev/cciss/c?d? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
-	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
-	${HDPARM} -i ${disk} >> ${FILEHDPARM}        2> /dev/null
-	${HDPARM} -I ${disk} >> ${FILEHDPARM}        2> /dev/null
-	sleep 1
-	${HDPARMSPEED} ${disk} >> ${FILEHDPARM}      2> /dev/null
-	${SDPARM} --all                  ${disk} >> ${FILEHDPARM} 2> /dev/null
-	${SDPARM} --all --long           ${disk} >> ${FILEHDPARM} 2> /dev/null
-	${SDPARM} --all --long --verbose ${disk} >> ${FILEHDPARM} 2> /dev/null
+# 	${HDPARM}    ${disk} >> ${FILEHDPARM}        2> /dev/null
+# 	${HDPARM} -i ${disk} >> ${FILEHDPARM}        2> /dev/null
+# 	${HDPARM} -I ${disk} >> ${FILEHDPARM}        2> /dev/null
+# 	sleep 1
+# 	${HDPARMSPEED} ${disk} >> ${FILEHDPARM}      2> /dev/null
+# 	${SDPARM} --all                  ${disk} >> ${FILEHDPARM} 2> /dev/null
+# 	${SDPARM} --all --long           ${disk} >> ${FILEHDPARM} 2> /dev/null
+# 	${SDPARM} --all --long --verbose ${disk} >> ${FILEHDPARM} 2> /dev/null
+ 	    echo_execute ${FILEHDPARM} ${HDPARM}    ${disk}
+ 	    echo_execute ${FILEHDPARM} ${HDPARM} -i ${disk}
+ 	    echo_execute ${FILEHDPARM} ${HDPARM} -I ${disk}
+ 	    echo_execute ${FILEHDPARM} ${HDPARMSPEED} ${disk}
+ 	    echo_execute ${FILEHDPARM} ${SDPARM} --all                  ${disk}
+ 	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long           ${disk}
+ 	    echo_execute ${FILEHDPARM} ${SDPARM} --all --long --verbose ${disk}
 	fi
     done
     #set +x
