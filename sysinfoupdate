@@ -3,6 +3,37 @@
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 
+# Define VARS to call commands
+if [ -x /bin/grep ] ; then
+    GREP=/bin/grep
+else 
+    if [ -x /usr/bin/grep ] ; then
+	GREP=/usr/bin/grep
+    else
+	GREP=grep
+    fi
+fi
+
+if [ -x /bin/mktemp ] ; then
+    MKTEMP=/bin/mktemp
+    MKTEMPDIR="/bin/mktemp -d"
+else
+    if [ -x /usr/bin/mktemp ] ; then
+	MKTEMP="/usr/bin/mktemp tmp.XXXXXXXXXXXXXXXX"
+	MKTEMPDIR="/usr/bin/mktemp -d tmp.XXXXXXXXXXXXXXXX"
+    fi
+fi
+
+if [ -x /bin/mount ] ; then
+    MOUNT=/bin/mount
+else
+    if [ -x /sbin/mount ] ; then
+	MOUNT=/sbin/mount
+    else
+	MOUNT=mount
+    fi
+fi
+
 # $1 - procfile
 # $2 - File to log
 function cat-file () {
@@ -30,7 +61,6 @@ function packages-list-update () {
 function partition-update () {
     FDISK=/sbin/fdisk
     CP=/bin/cp
-    MOUNT=/bin/mount
     DF=/bin/df
     FILEPART=${DIARIO}/part-list
     FILEFSTAB=${DIARIO}/fstab
@@ -44,7 +74,16 @@ function partition-update () {
     echo -n "."
     > ${FILEFS}
     echo "mounted partitions"           >> ${FILEFS}
-    ${MOUNT} -l                         >> ${FILEFS}
+    case $OSTYPE in
+	linux-gnu)
+	    ${MOUNT} -l                         >> ${FILEFS}
+	    ;;
+	darwin8.0)
+	    ${MOUNT}                            >> ${FILEFS}
+	    ;;
+	*)
+	    ${MOUNT}                            >> ${FILEFS}	
+    esac
     echo "size of filesystems df -h"    >> ${FILEFS}
     ${DF} -h                            >> ${FILEFS}
     echo "inodes of filesystems df -iH" >> ${FILEFS}
@@ -66,7 +105,6 @@ function lvm-update () {
     fi
     if [ ! -x ${LVDISPLAY} -o ! -x ${PVDISPLAY} ] ; then
 	echo "$LVDISPLAY or $PVDISPLAY not available"
-	${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
     else
 	${VGDISPLAY} -A >> ${FILELVM} 2>&1
 	${LVDISPLAY} -v -m >> ${FILELVM} 2>&1
@@ -103,13 +141,17 @@ function kernel-update () {
     cat-file /proc/cmdline     ${FILEKERNEL}
     cat-file /proc/crypto      ${FILEKERNEL}
     cat-file /proc/devices     ${FILEKERNEL}
-    ${LSMOD}             >>    ${FILEKERNEL}
+    if [ -x ${LSMOD} ] ; then
+	${LSMOD}             >>    ${FILEKERNEL}
+    fi
     echo                 >>    ${FILEKERNEL}
     cat-file /proc/fb          ${FILEKERNEL}
     cat-file /proc/locks       ${FILEKERNEL}
     cat-file /proc/execdomains ${FILEKERNEL}
     echo "free"          >>    ${FILEKERNEL}
-    ${FREE}              >>    ${FILEKERNEL}
+    if [ -x ${FREE} ] ; then
+	${FREE}              >>    ${FILEKERNEL}
+    fi
     cat-file /proc/meminfo     ${FILEKERNEL}
     cat-file /proc/mtrr        ${FILEKERNEL}
     cat-file /proc/lvm/global  ${FILEKERNEL}
@@ -124,11 +166,11 @@ function kernel-update () {
 	strings ${AFSD2} | grep built   >> ${FILEKERNEL}
     fi
     echo "OpenAFS modules"              >> ${FILEKERNEL}
-    if which rxdebug > /dev/null ; then
+    if rxdebug > /dev/null 2>&1; then
 	rxdebug localhost 7001 -version >> ${FILEKERNEL}
     fi
     echo "OpenAFS cache settings"       >> ${FILEKERNEL}
-    if which cmdebug > /dev/null ; then
+    if cmdebug > /dev/null 2>&1; then
 	cmdebug localhost -cache        >> ${FILEKERNEL}
     fi
     echo "/proc/sys"                            >> ${FILEKERNEL}
@@ -144,33 +186,41 @@ function kernel-boot () {
     KERNELLOG=/var/log/kern.log
     DMESG=/bin/dmesg
     HEAD=/usr/bin/head
-    GREP=/bin/grep
-    MKTEMP=/bin/mktemp
     CP=/bin/cp
     CUT=/usr/bin/cut
     
     echo -n "."
-    TMPFILE=`mktemp`
-    $DMESG > ${TMPFILE}
-    if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
-	${CP} ${TMPFILE} ${FILEKERNELBOOT}
-    else
-	if ${GREP} "Linux version" ${KERNELLOG}> /dev/null ; then
-	    LMATCH=`grep -n "Linux version" /var/log/kern.log | tail -1 | cut -d: -f 1`
-	    FSIZE=`wc -l /var/log/kern.log | cut -f 1 -d ' '`
-	    tail --lines=$(( FSIZE - LMATCH + 1)) /var/log/kern.log | cut -d : -f 4- | cut -b 2- > ${FILEKERNELBOOT}
-	else
-	    if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
-		${CP} /var/log/dmesg ${FILEKERNELBOOT}
+    case $OSTYPE in
+	linux-gnu)
+	    TMPFILE=`${MKTEMP}`
+	    ${DMESG} > ${TMPFILE}
+	    if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
+		${CP} ${TMPFILE} ${FILEKERNELBOOT}
 	    else
-		echo "Could not find initial kernel boot message, ${DMESG} ${KERNELLOG} and ${DMESGLOG} did not help."
-		echo 
-		echo "See if exist an alternative."
-		echo
-		echo "If kernel boot messages are to big to fit in /proc/kmsg ring buffer, considerar to change runlevels of sysklogd, klogd and bootmisc.sh.  Sugestion: /etc/rcS.d/S40sysklog /etc/rcS.d/S41klogd /etc/rcS.d/S41bootmisc.sh"
+		if ${GREP} "Linux version" ${KERNELLOG}> /dev/null ; then
+		    LMATCH=`grep -n "Linux version" /var/log/kern.log | tail -1 | cut -d: -f 1`
+		    FSIZE=`wc -l /var/log/kern.log | cut -f 1 -d ' '`
+		    tail --lines=$(( FSIZE - LMATCH + 1)) /var/log/kern.log | cut -d : -f 4- | cut -b 2- > ${FILEKERNELBOOT}
+		else
+		    if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
+			${CP} /var/log/dmesg ${FILEKERNELBOOT}
+		    else
+			echo "Could not find initial kernel boot message, ${DMESG} ${KERNELLOG} and ${DMESGLOG} did not help."
+			echo 
+			echo "See if exist an alternative."
+			echo
+			echo "If kernel boot messages are to big to fit in /proc/kmsg ring buffer, considerar to change runlevels of sysklogd, klogd and bootmisc.sh.  Sugestion: /etc/rcS.d/S40sysklog /etc/rcS.d/S41klogd /etc/rcS.d/S41bootmisc.sh"
+		    fi
+		fi
 	    fi
-	fi
-    fi
+	    ;;
+	darwin8.0)
+	    DMESG > ${FILEKERNELBOOT}
+	    ;;
+	*)
+	    
+    esac
+    
     if [ -e /var/log/boot ] ; then
 	${CUT}  -d : -f 4- /var/log/boot | ${CUT} -b2- > ${DIARIO}/boot-log 
     fi
@@ -190,17 +240,19 @@ function hardware-update () {
     
     echo -n "."
     > ${FILEPCI}
-    echo "#################### lspci "      >> ${FILEPCI}
-    ${LSPCI}                                >> ${FILEPCI}
-    echo "#################### lspci -tv"   >> ${FILEPCI}
-    ${LSPCI} -tv                            >> ${FILEPCI}
-    echo "#################### lspci -v"    >> ${FILEPCI}
-    ${LSPCI} -v                             >> ${FILEPCI}
-    echo "#################### lspci -vv"   >> ${FILEPCI}
-    ${LSPCI} -vv                            >> ${FILEPCI}
-    cat-file /proc/pci                         ${FILEPCI}
-    ${LSPCI} -x                              > ${FILEPCI}-x
-    cat-file /proc/bus/pci/devices             ${FILEPCI}-x
+    if [ -x ${LSPCI} ] ; then
+	echo "#################### lspci "      >> ${FILEPCI}
+	${LSPCI}                                >> ${FILEPCI}
+	echo "#################### lspci -tv"   >> ${FILEPCI}
+	${LSPCI} -tv                            >> ${FILEPCI}
+	echo "#################### lspci -v"    >> ${FILEPCI}
+	${LSPCI} -v                             >> ${FILEPCI}
+	echo "#################### lspci -vv"   >> ${FILEPCI}
+	${LSPCI} -vv                            >> ${FILEPCI}
+	cat-file /proc/pci                         ${FILEPCI}
+	${LSPCI} -x                              > ${FILEPCI}-x
+	cat-file /proc/bus/pci/devices             ${FILEPCI}-x
+    fi
     
     > ${FILEUSB}
     if [ -x ${LSUSB} ] ; then
@@ -270,7 +322,7 @@ function hardware-update () {
 function hpacucli-update () {
     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
-    TMPDIR=`mktemp -d`
+    TMPDIR=`${MKTEMPDIR}`
 
     echo -n "."
     if [ ! -x ${HPACUCLI} ] ; then
@@ -345,7 +397,7 @@ function hpacucli-update () {
 function hpacucli-update-7.6 () {
     HPACUCLI=/usr/sbin/hpacucli
     FILEHPACUCLI=${DIARIO}/hpacucli-report
-    TMPDIR=`mktemp -d`
+    TMPDIR=`${MKTEMPDIR}`
 
     echo -n "."
     if [ ! -x ${HPACUCLI} ] ; then
@@ -394,20 +446,29 @@ function net-update () {
     > ${FILENET}
     echo "ifconfig"        >> ${FILENET}
     ${IFCONFIG}            >> ${FILENET}
-    echo "route"           >> ${FILENET}
-    ${ROUTE}               >> ${FILENET}
-    echo "route -A inet6"  >> ${FILENET}
-    ${ROUTE} -A inet6      >> ${FILENET}
-    echo "ip link"         >> ${FILENET}
-    ${IP} link             >> ${FILENET}
-    echo "ip addr"         >> ${FILENET}
-    ${IP} addr             >> ${FILENET}
-    echo "ip addr"         >> ${FILENET}
-    ${IP} route            >> ${FILENET}
-    echo "ip -6 route"     >> ${FILENET}
-    ${IP} -6 route         >> ${FILENET}
-    echo "ip tunnel"       >> ${FILENET}
-    ${IP} tunnel           >> ${FILENET}
+    # Get routing tables
+    if [ $OSTYPE == "darwin8.0" ] ; then
+	netstat -nr            >> ${FILENET}
+    else
+	echo "route"           >> ${FILENET}
+	${ROUTE}               >> ${FILENET}
+	echo "route -A inet6"  >> ${FILENET}
+	${ROUTE} -A inet6      >> ${FILENET}
+    fi
+
+    # Get all info using iproute software
+    if [ -x ${IP} ] ; then
+	echo "ip link"         >> ${FILENET}
+	${IP} link             >> ${FILENET}
+	echo "ip addr"         >> ${FILENET}
+	${IP} addr             >> ${FILENET}
+	echo "ip addr"         >> ${FILENET}
+	${IP} route            >> ${FILENET}
+	echo "ip -6 route"     >> ${FILENET}
+	${IP} -6 route         >> ${FILENET}
+	echo "ip tunnel"       >> ${FILENET}
+	${IP} tunnel           >> ${FILENET}
+    fi
     cat-file /proc/net/dev         ${FILENET}
     cat-file /proc/net/dev_mcast   ${FILENET}
     cat-file /proc/net/protocols   ${FILENET}
