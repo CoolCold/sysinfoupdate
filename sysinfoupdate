@@ -4,24 +4,12 @@
 DIARIO=${HOME}/diario/
 
 function packages-list-update () {
-    case $HOSTNAME in
-	picard|data|bcksrv|calhariz-mac-adm|natasha.local|portatil-calhariz-adm.tagus.ist.utl.pt|mariana|backup)
-	    FILE="${DIARIO}/packages-list"
-	    if [ -f "${FILE}" ] ; then
-		COLUMNS=132 dpkg --list > "${FILE}"
-	    else
-		echo "Nao existe o ficheiro ${FILE}"
-	    fi
-	    ;;
-	*)
-	    if [ -d "${DIARIO}" ] ; then
-		FILE="${DIARIO}/packages-list"
-		if [ -f "${FILE}" ] ; then
-		    COLUMNS=132 dpkg --list > "${FILE}"
-		fi
-	    fi
-	    ;;
-    esac
+    FILE="${DIARIO}/packages-list"
+
+    if [ -d "${DIARIO}" ] ; then
+	COLUMNS=132 dpkg --list > "${FILE}"
+    fi
+
 }
 
 function partition-update () {
@@ -31,8 +19,8 @@ function partition-update () {
     FILEFSTAB=${DIARIO}/fstab
 
     > ${FILEPART}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
-	fdisk -l /dev/${disk} >> ${FILEPART}
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh cciss/c?d? ; do
+	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
     
     ${CP} /etc/fstab ${FILEFSTAB}
@@ -43,8 +31,8 @@ function lvm-update () {
     FILELVM=${DIARIO}/lvm-list
     > ${FILELVM}
 
-    ${VGDISPLAY} --short >> ${FILELVM}
-    ${VGDISPLAY} --verbose >> ${FILELVM}
+    ${VGDISPLAY} --short >> ${FILELVM} 2>&1
+    ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
 }
 
 # $1 - procfile
@@ -68,29 +56,33 @@ function kernel-update () {
 
     >${FILEKERNEL}
     cat-file /proc/version  ${FILEKERNEL}
-    ${LSMOD} >> ${FILEKERNEL}
-    echo >> ${FILEKERNEL}
-    cat-file /proc/dma ${FILEKERNEL}
-    cat-file /proc/fb  ${FILEKERNEL}
+    cat-file /proc/cmdline  ${FILEKERNEL}
+    cat-file /proc/devices  ${FILEKERNEL}
+    ${LSMOD}             >> ${FILEKERNEL}
+    echo                 >> ${FILEKERNEL}
+    cat-file /proc/fb       ${FILEKERNEL}
+    cat-file /proc/lvm/global ${FILEKERNEL}
 }
 
 function hardware-update () {
     LSPCI=/usr/bin/lspci
+    HDPARM=/sbin/hdparm
     FILEPCI=${DIARIO}/pci-list
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
     
     > ${FILEPCI}
-    echo "lspci" >> ${FILEPCI}
-    ${LSPCI} >> ${FILEPCI}
-    echo "lspci -tv" >> ${FILEPCI}
-    ${LSPCI} -tv >> ${FILEPCI}
-    echo "lspci -v" >> ${FILEPCI}
-    ${LSPCI} -v >> ${FILEPCI}
-    echo "lspci -vv" >> ${FILEPCI}
-    ${LSPCI} -vv >> ${FILEPCI}
-    ${LSPCI} -x > ${FILEPCI}-x
+    echo "#################### lspci "       >> ${FILEPCI}
+    ${LSPCI}           >> ${FILEPCI}
+    echo "#################### lspci -tv"   >> ${FILEPCI}
+    ${LSPCI} -tv       >> ${FILEPCI}
+    echo "#################### lspci -v"    >> ${FILEPCI}
+    ${LSPCI} -v        >> ${FILEPCI}
+    echo "#################### lspci -vv"   >> ${FILEPCI}
+    ${LSPCI} -vv       >> ${FILEPCI}
+    cat-file /proc/pci    ${FILEPCI}
+    ${LSPCI} -x         > ${FILEPCI}-x
     
     > ${FILEALSA}
     cat-file /proc/asound/version ${FILEALSA}
@@ -101,24 +93,34 @@ function hardware-update () {
 
     > ${FILEHARDWARE}
     cat-file /proc/cpuinfo                ${FILEHARDWARE}
+    cat-file /proc/dma                    ${FILEHARDWARE}
+    cat-file /proc/interrupts             ${FILEHARDWARE}
+    cat-file /proc/iomem                  ${FILEHARDWARE}
+    cat-file /proc/ioports                ${FILEHARDWARE}
     cat-file /proc/device-tree/compatible ${FILEHARDWARE}
-    echo >> ${FILEHARDWARE}
+    echo                               >> ${FILEHARDWARE}
     cat-file /proc/device-tree/model      ${FILEHARDWARE}
-    echo >> ${FILEHARDWARE}
+    echo                               >> ${FILEHARDWARE}
     cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
-    echo >> ${FILEHARDWARE}
-    cat-file /proc/bus/input/devices     ${FILEHARDWARE}
-    cat-file /proc/bus/usb/devices       ${FILEHARDWARE}
-    cat-file /proc/ide/drivers           ${FILEHARDWARE}
-    cat-file /proc/ide/via         ${FILEHARDWARE}
-    cat-file /proc/ide/piix        ${FILEHARDWARE}
-    cat-file /proc/scsi/scsi       ${FILEHARDWARE}
+    echo                               >> ${FILEHARDWARE}
+    cat-file /proc/bus/input/devices      ${FILEHARDWARE}
+    cat-file /proc/bus/usb/devices        ${FILEHARDWARE}
+    cat-file /proc/bus/usb/drivers        ${FILEHARDWARE}
+    cat-file /proc/ide/drivers            ${FILEHARDWARE}
+    cat-file /proc/ide/via                ${FILEHARDWARE}
+    cat-file /proc/ide/piix               ${FILEHARDWARE}
+    cat-file /proc/ide/svwks              ${FILEHARDWARE}
+    cat-file /proc/scsi/scsi              ${FILEHARDWARE}
+    cat-file /proc/driver/cciss/cciss0    ${FILEHARDWARE}
+    cat-file /proc/dri/0/name             ${FILEHARDWARE}
+    cat-file /proc/dri/0/mem              ${FILEHARDWARE}
+    
 
     > ${FILEHDPARM}
-    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
-	hdparm    /dev/${disk} >> ${FILEHDPARM}
-	hdparm -i /dev/${disk} >> ${FILEHDPARM}
-	hdparm -I /dev/${disk} >> ${FILEHDPARM}
+    for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh cciss/c?d? ; do
+	${HDPARM}    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
     
 }
@@ -130,23 +132,23 @@ function net-update () {
     IP=/sbin/ip
     
     > ${FILENET}
-    echo "ifconfig"     >> ${FILENET}
-    ${IFCONFIG}         >> ${FILENET}
-    echo "route"        >> ${FILENET}
-    ${ROUTE}            >> ${FILENET}
-    echo "route -A inet6" >> ${FILENET}
-    ${ROUTE} -A inet6   >> ${FILENET}
-    echo "ip link"      >> ${FILENET}
-    ${IP} link          >> ${FILENET}
-    echo "ip addr"      >> ${FILENET}
-    ${IP} addr          >> ${FILENET}
-    echo "ip addr"      >> ${FILENET}
-    ${IP} route         >> ${FILENET}
-    echo "ip -6 route"  >> ${FILENET}
-    ${IP} -6 route      >> ${FILENET}
-    echo "ip tunnel"    >> ${FILENET}
-    ${IP} tunnel        >> ${FILENET}
-    cat-file /proc/net/dev ${FILENET}
+    echo "ifconfig"        >> ${FILENET}
+    ${IFCONFIG}            >> ${FILENET}
+    echo "route"           >> ${FILENET}
+    ${ROUTE}               >> ${FILENET}
+    echo "route -A inet6"  >> ${FILENET}
+    ${ROUTE} -A inet6      >> ${FILENET}
+    echo "ip link"         >> ${FILENET}
+    ${IP} link             >> ${FILENET}
+    echo "ip addr"         >> ${FILENET}
+    ${IP} addr             >> ${FILENET}
+    echo "ip addr"         >> ${FILENET}
+    ${IP} route            >> ${FILENET}
+    echo "ip -6 route"     >> ${FILENET}
+    ${IP} -6 route         >> ${FILENET}
+    echo "ip tunnel"       >> ${FILENET}
+    ${IP} tunnel           >> ${FILENET}
+    cat-file /proc/net/dev    ${FILENET}
 }
 
 
