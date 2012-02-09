@@ -113,6 +113,7 @@ function hardware-update () {
     cat-file /proc/ide/svwks              ${FILEHARDWARE}
     cat-file /proc/scsi/scsi              ${FILEHARDWARE}
     cat-file /proc/driver/cciss/cciss0    ${FILEHARDWARE}
+    cat-file /proc/driver/cciss/cciss1    ${FILEHARDWARE}
     cat-file /proc/scsi/3w-xxxx/0         ${FILEHARDWARE}
     cat-file /proc/pmu/info               ${FILEHARDWARE}
     cat-file /proc/pmu/interrupts         ${FILEHARDWARE}
