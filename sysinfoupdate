@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-01-01 21:43:06 +0000 (Sáb, 01 Jan 2011) $
+# $Date: 2011-01-01 22:52:15 +0000 (Sáb, 01 Jan 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 1702 $
+# $Revision: 1703 $
 
 
 
@@ -126,12 +126,12 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $ $Revision: 1702 $" >> "${FILE}"
+	echo "$PROG" ' $Revision: 1703 $ picard' >> "${FILE}"
+	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
 	cat-file /etc/issue.net      "${FILE}"
 	echo "deb packages installed" >> "${FILE}"
-	echo >> "${FILE}"
 	COLUMNS=256 dpkg --list | cut -f 1-3 -d ' ' >> "${FILE}"
 	COLUMNS=175 dpkg --list >> "${FILE}"
 	echo >> "${FILE}"
