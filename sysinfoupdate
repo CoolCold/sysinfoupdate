@@ -351,6 +351,18 @@ function hardware-update () {
        done
     fi
 
+    if [ -d /proc/acpi/thermal_zone ] ; then
+	for file in /proc/acpi/thermal_zone/* /proc/acpi/thermal_zone/*/* ; do
+	    if [ -f "${file}" ] ; then
+		cat-file "${file}"             ${FILEHARDWARE}
+	    else 
+		if [ -d "${file}" ] ; then
+		    echo "${file}"          >> ${FILEHARDWARE}
+		fi
+	    fi
+	done
+    fi
+
     if [ -d /sys/devices/system/cpu ] ; then
        for cpu in /sys/devices/system/cpu* ; do
            if [ -d ${cpu}/cpufreq ] ; then
