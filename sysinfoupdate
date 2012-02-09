@@ -49,8 +49,10 @@ function lvm-update () {
     > ${FILELVM}
 
     echo -n "."
-    ${VGDISPLAY} --short   >> ${FILELVM} 2>&1
-    ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
+    if [ -x ${VGDISPLAY} ] ; then
+	${VGDISPLAY} --short   >> ${FILELVM} 2>&1
+	${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
+    fi
 }
 
 function md-update () {
@@ -59,7 +61,10 @@ function md-update () {
     > ${FILEMD}
     
     echo -n "."
-    mdadm --detail /dev/md* >> ${FILEMD} 2>&1
+    if [ ! -x ${MDADM} ] ; then
+	return
+    fi
+    ${MDADM} mdadm --detail /dev/md* >> ${FILEMD} 2>&1
     cat-file /proc/mdstat      ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_max ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_min ${FILEMD}
@@ -90,8 +95,12 @@ function kernel-update () {
     cat-file /proc/swaps       ${FILEKERNEL}
     cat-file /proc/filesystems ${FILEKERNEL}
     echo "OpenAFS client"           >> ${FILEKERNEL}
-    rxdebug localhost 7001 -version >> ${FILEKERNEL}
-    cmdebug localhost -cache        >> ${FILEKERNEL}
+    if which rxdebug ; then
+	rxdebug localhost 7001 -version >> ${FILEKERNEL}
+    fi
+    if which cmdebug ; then
+	cmdebug localhost -cache        >> ${FILEKERNEL}
+    fi
     echo "/proc/sys"                            >> ${FILEKERNEL}
     cat-file /proc/sys/kernel/randomize_va_space   ${FILEKERNEL}
     cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
@@ -207,6 +216,9 @@ function hpacucli-update () {
     TMPDIR=`mktemp -d`
 
     echo -n "."
+    if [ ! -x ${HPACUCLI} ] ; then
+	return
+    fi
     > ${FILEHPACUCLI}
     echo "Controllers" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
