@@ -4,16 +4,16 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 21:26:51 +0000 (Sáb, 17 Dez 2011) $
+# $Date: 2011-12-17 21:30:24 +0000 (Sáb, 17 Dez 2011) $
 # $HeadURL: svn+ssh://cal@picard.mine.nu/home/svn/trunk/source.comum/scripts/sysinfoupdate $
-# $Revision: 2158 $ Calhariz
+# $Revision: 2159 $ Calhariz
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 2158 $ Calhariz'
+VERSION=' $Revision: 2159 $ Calhariz'
 
 echo "$PROG" "$VERSION"
 
@@ -174,7 +174,9 @@ function partition-update () {
     done
     echo -n "."
     if test -x ${PARTED} ; then
-	${PARTED} -l >> ${FILEPART}
+	echo "${PARTED} -l" >> ${FILEPART}
+	time ${PARTED} -l >> ${FILEPART}
+	echo "parted -l"
     else
 	echo 
 	echo "${PARTED} not found, please check or install parted"
