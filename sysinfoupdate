@@ -4,9 +4,9 @@
 #
 # License: GPL-2
 #
-# $Date: 2011-05-16 19:44:20 +0100 (Seg, 16 Mai 2011) $
+# $Date: 2011-05-16 20:01:38 +0100 (Seg, 16 Mai 2011) $
 # $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 4952 $
+# $Revision: 4953 $
 
 
 
@@ -135,7 +135,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" ' $Revision: 4952 $ CIIST' >> "${FILE}"
+	echo "$PROG" ' $Revision: 4953 $ CIIST' >> "${FILE}"
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
 	cat-file /etc/issue          "${FILE}"
@@ -914,6 +914,10 @@ function hpacucli-update () {
 
 function ilo-update () {
     FILEHPONCFG=${DIARIO}/hponcfg-xml
+
+    if ! which ${HPONCFG} > /dev/null ; then
+	return
+    fi
     
     ${HPONCFG} -a -w ${FILEHPONCFG}
 }
