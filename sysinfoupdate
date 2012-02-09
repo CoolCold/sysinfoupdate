@@ -71,6 +71,7 @@ function hardware-update () {
     FILEALSA=${DIARIO}/alsa-list
     FILEHARDWARE=${DIARIO}/hardware-list
     FILEHDPARM=${DIARIO}/hdparm-list
+    HPADUCLI=/usr/sbin/hpaducli
     
     > ${FILEPCI}
     echo "#################### lspci "       >> ${FILEPCI}
@@ -129,6 +130,7 @@ function hardware-update () {
 	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
     
+    ${HPADUCLI} -f ${DIARIO}/hpadu-report
 }
 
 function net-update () {
