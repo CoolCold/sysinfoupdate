@@ -30,15 +30,26 @@ function packages-list-update () {
 function partition-update () {
     FDISK=/sbin/fdisk
     CP=/bin/cp
+    MOUNT=/bin/mount
+    DF=/bin/df
     FILEPART=${DIARIO}/part-list
     FILEFSTAB=${DIARIO}/fstab
+    FILEFS=${DIARIO}/fs-list
 
     echo -n "."
     > ${FILEPART}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh sdi sdj cciss/c?d? cciss/disc?/disc ; do
 	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
-    
+    echo -n "."
+    > ${FILEFS}
+    echo "mounted partitions"           >> ${FILEFS}
+    ${MOUNT} -l                         >> ${FILEFS}
+    echo "size of filesystems df -h"    >> ${FILEFS}
+    ${DF} -h                            >> ${FILEFS}
+    echo "inodes of filesystems df -iH" >> ${FILEFS}
+    ${DF} -iH                           >> ${FILEFS}   
+
     ${CP} /etc/fstab ${FILEFSTAB}
 }
 
@@ -109,11 +120,14 @@ function kernel-update () {
 
 function kernel-boot () {
     FILEKERNELBOOT=${DIARIO}/kernel-boot
+    DMESGLOG=/var/log/dmesg
+    KERNELLOG=/var/log/kern.log
     DMESG=/bin/dmesg
     HEAD=/usr/bin/head
     GREP=/bin/grep
     MKTEMP=/bin/mktemp
     CP=/bin/cp
+    CUT=/usr/bin/cut
     
     echo -n "."
     TMPFILE=`mktemp`
@@ -121,13 +135,24 @@ function kernel-boot () {
     if $HEAD ${TMPFILE} | ${GREP} "Linux version" > /dev/null ; then
 	${CP} ${TMPFILE} ${FILEKERNELBOOT}
     else
-	if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
-	    ${CP} /var/log/dmesg ${FILEKERNELBOOT}
+	if ${GREP} "Linux version" ${KERNELLOG}> /dev/null ; then
+	    LMATCH=`grep -n "Linux version" /var/log/kern.log | tail -1 | cut -d: -f 1`
+	    FSIZE=`wc -l /var/log/kern.log | cut -f 1 -d ' '`
+	    tail --lines=$(( FSIZE - LMATCH + 1)) /var/log/kern.log | cut -d : -f 4- | cut -b 2- > ${FILEKERNELBOOT}
 	else
-	    echo "Could not find initial kernel boot message," 
-	    echo "and /var/log/dmesg did not help."
-	    echo "See if exist an alternative."
+	    if $HEAD /var/log/dmesg | ${GREP} "Linux version" > /dev/null ; then
+		${CP} /var/log/dmesg ${FILEKERNELBOOT}
+	    else
+		echo "Could not find initial kernel boot message, ${DMESG} ${KERNELLOG} and ${DMESGLOG} did not help."
+		echo 
+		echo "See if exist an alternative."
+		echo
+		echo "If kernel boot messages are to big to fit in /proc/kmsg ring buffer, considerar to change runlevels of sysklogd, klogd and bootmisc.sh.  Sugestion: /etc/rcS.d/S40sysklog /etc/rcS.d/S41klogd /etc/rcS.d/S41bootmisc.sh"
+	    fi
 	fi
+    fi
+    if [ -e /var/log/boot ] ; then
+	${CUT}  -d : -f 4- /var/log/boot | ${CUT} -b2- > ${DIARIO}/boot-log 
     fi
 }
 
