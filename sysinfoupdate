@@ -323,6 +323,8 @@ function hardware-update () {
     cat-file /proc/dri/0/mem                  ${FILEHARDWARE}
     cat-file /proc/mpt/version                ${FILEHARDWARE}
     cat-file /proc/mpt/summary                ${FILEHARDWARE}
+    cat-file /proc/mpt/ioc0/info              ${FILEHARDWARE}
+    cat-file /proc/mpt/ioc0/summary           ${FILEHARDWARE}
 
     echo "Power management"                >> ${FILEHARDWARE}
     cat-file /proc/apm				${FILEHARDWARE}
