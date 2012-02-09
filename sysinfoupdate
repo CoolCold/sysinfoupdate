@@ -271,9 +271,19 @@ function hpacucli-update () {
     echo "Controllers" >> ${FILEHPACUCLI}
     ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
 
+
     echo -n "."
-    cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${FILEHPACUCLI}
     cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${FILEHPACUCLI}
+    cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${FILEHPACUCLI}
+
+
+    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
+	echo -n "."
+ 	echo "Discs of controller at $target" >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} array all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-array >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-ld >> ${FILEHPACUCLI}
+ 	${HPACUCLI} controller ch=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-pd >> ${FILEHPACUCLI}
+    done
 
     for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
 	echo -n "."
@@ -283,12 +293,24 @@ function hpacucli-update () {
  	${HPACUCLI} controller slot=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-pd >> ${FILEHPACUCLI}
     done
 
+
     for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
 	echo -n "."
- 	echo "Discs of controller at $target" >> ${FILEHPACUCLI}
- 	${HPACUCLI} controller ch=${target} array all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-array >> ${FILEHPACUCLI}
- 	${HPACUCLI} controller ch=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-ld >> ${FILEHPACUCLI}
- 	${HPACUCLI} controller ch=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-at-${target}-pd >> ${FILEHPACUCLI}
+ 	echo "Detail of discs at $target" >> ${FILEHPACUCLI}
+	for array in `grep -h array ${TMPDIR}/hpacucli-controller-at-${target}-array | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller ch=${target} array $array show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for ld in `grep -h logicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-ld | awk '{print $2}'` ; do
+	    #echo $ld
+	    ${HPACUCLI} controller ch=${target} ld $ld show >> ${FILEHPACUCLI}
+	done
+	echo -n "."
+	for pd in `grep -h physicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-pd | awk '{print $2}'` ; do
+	    #echo $pd
+	    ${HPACUCLI} controller ch=${target} pd $pd show >> ${FILEHPACUCLI}
+	done
     done
 
     for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
@@ -309,25 +331,45 @@ function hpacucli-update () {
 	    ${HPACUCLI} controller slot=${target} pd $pd show >> ${FILEHPACUCLI}
 	done
     done
+}
 
-    for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
-	echo -n "."
- 	echo "Detail of discs at $target" >> ${FILEHPACUCLI}
-	for array in `grep -h array ${TMPDIR}/hpacucli-controller-at-${target}-array | awk '{print $2}'` ; do
-	    #echo $ld
-	    ${HPACUCLI} controller ch=${target} array $array show >> ${FILEHPACUCLI}
-	done
-	echo -n "."
-	for ld in `grep -h logicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-ld | awk '{print $2}'` ; do
-	    #echo $ld
-	    ${HPACUCLI} controller ch=${target} ld $ld show >> ${FILEHPACUCLI}
-	done
-	echo -n "."
-	for pd in `grep -h physicaldrive ${TMPDIR}/hpacucli-controller-at-${target}-pd | awk '{print $2}'` ; do
-	    #echo $pd
-	    ${HPACUCLI} controller ch=${target} pd $pd show >> ${FILEHPACUCLI}
-	done
-    done
+function hpacucli-update-7.6 () {
+    HPACUCLI=/usr/sbin/hpacucli
+    FILEHPACUCLI=${DIARIO}/hpacucli-report
+    TMPDIR=`mktemp -d`
+
+    echo -n "."
+    if [ ! -x ${HPACUCLI} ] ; then
+	return
+    fi
+    
+    VERSION=`echo "exit" | ${HPACUCLI} | grep CLI | cut -d ' ' -f 6`
+    V=`echo $VERSION | cut -d - -f 1`
+    V1=`echo $V | cut -d . -f 1`
+    V2=`echo $V | cut -d . -f 2`
+    V3=`echo $V | cut -d . -f 3`
+    if [ $V1 -lt 7 ] ; then
+	hpacucli-update
+	return
+    fi
+
+    if [ $V2 -lt 60 ] ; then
+	hpacucli-update
+	return
+    fi
+
+    > ${FILEHPACUCLI}
+    echo "Controllers" >> ${FILEHPACUCLI}
+    ${HPACUCLI} controller all show | tee -a ${FILEHPACUCLI} > ${TMPDIR}/hpacucli-controller
+
+    echo -n "."
+    ${HPACUCLI} controller all show detail >> ${FILEHPACUCLI} 
+
+    echo -n "."
+    ${HPACUCLI} controller all show config >> ${FILEHPACUCLI} 
+    
+    echo -n "."
+    ${HPACUCLI} controller all show config detail >> ${FILEHPACUCLI} 
 }
 
 
