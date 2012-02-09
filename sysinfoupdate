@@ -32,7 +32,7 @@ function partition-update () {
 
     > ${FILEPART}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
-	fdisk -l /dev/${disk} >> ${FILEPART}
+	fdisk -l /dev/${disk} >> ${FILEPART} 2>/dev/null
     done
     
     ${CP} /etc/fstab ${FILEFSTAB}
@@ -43,8 +43,8 @@ function lvm-update () {
     FILELVM=${DIARIO}/lvm-list
     > ${FILELVM}
 
-    ${VGDISPLAY} --short >> ${FILELVM}
-    ${VGDISPLAY} --verbose >> ${FILELVM}
+    ${VGDISPLAY} --short >> ${FILELVM} 2>&1
+    ${VGDISPLAY} --verbose >> ${FILELVM} 2>&1
 }
 
 # $1 - procfile
@@ -116,9 +116,9 @@ function hardware-update () {
 
     > ${FILEHDPARM}
     for disk in hda hdb hdc hdd hde hdf hdg hdh sda sdb sdc sdd sde sdf sdg sdh ; do
-	hdparm    /dev/${disk} >> ${FILEHDPARM}
-	hdparm -i /dev/${disk} >> ${FILEHDPARM}
-	hdparm -I /dev/${disk} >> ${FILEHDPARM}
+	hdparm    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	hdparm -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	hdparm -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
     
 }
