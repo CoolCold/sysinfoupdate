@@ -333,6 +333,7 @@ function kernel-boot () {
 function hardware-update () {
     LSUSB=/usr/bin/lsusb
     HDPARM=/sbin/hdparm
+    SDPARM=/usr/bin/sdparm
     FILEPCI=${DIARIO}/pci-list
     FILEUSB=${DIARIO}/usb-list
     FILEALSA=${DIARIO}/alsa-list
@@ -527,6 +528,10 @@ function hardware-update () {
 	${HDPARM}    /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	#${HDPARM} -tT /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${SDPARM} --all                  /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${SDPARM} --all --long           /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
+	${SDPARM} --all --long --verbose /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
 
     if [ -x ${HPADUCLI} ] ; then
