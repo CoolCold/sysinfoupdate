@@ -64,6 +64,7 @@ function packages-list-update () {
 	echo -n "."
 	> "${FILE}"
 	echo "deb packages installed" >> "${FILE}"
+	COLUMNS=256 dpkg --list | cut -f 1-3 -d ' ' >> "${FILE}"
 	COLUMNS=132 dpkg --list >> "${FILE}"
 	echo "rpm packages installed" >> "${FILE}"
 	rpm -q -a >> "${FILE}" 2>&1
@@ -101,7 +102,7 @@ function partition-update () {
     ${DF} -h                            >> ${FILEFS}
     echo "inodes of filesystems df -iH" >> ${FILEFS}
     ${DF} -iH                           >> ${FILEFS}   
-
+    
     ${CP} /etc/fstab ${FILEFSTAB}
 }
 
@@ -129,7 +130,7 @@ function md-update () {
     MDADM=/sbin/mdadm
     FILEMD=${DIARIO}/md-list
     > ${FILEMD}
-    
+
     echo -n "."
     if [ ! -x ${MDADM} ] ; then
 	return
@@ -197,7 +198,7 @@ function kernel-update () {
     cat-file /proc/sys/kernel/tainted              ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/entropy_avail ${FILEKERNEL}
     cat-file /proc/sys/kernel/random/poolsize      ${FILEKERNEL}
-    cat-file /proc/sys/vm/vdso_enabled       	   ${FILEKERNEL}
+    cat-file /proc/sys/vm/vdso_enabled             ${FILEKERNEL}
 }
 
 function kernel-boot () {
@@ -208,7 +209,7 @@ function kernel-boot () {
     HEAD=/usr/bin/head
     CP=/bin/cp
     CUT=/usr/bin/cut
-    
+
     echo -n "."
     case $OSTYPE in
 	linux-gnu)
@@ -256,7 +257,7 @@ function hardware-update () {
     FILEHDPARM=${DIARIO}/hdparm-list
     HPADUCLI=/usr/sbin/hpaducli
     HPASMCLI=/sbin/hpasmcli
-    
+
     echo -n "."
     > ${FILEPCI}
     echo "#################### lspci "      >> ${FILEPCI}
@@ -322,7 +323,7 @@ function hardware-update () {
     cat-file /proc/dri/0/mem                  ${FILEHARDWARE}
     cat-file /proc/mpt/version                ${FILEHARDWARE}
     cat-file /proc/mpt/summary                ${FILEHARDWARE}
-    
+
     echo "Power management"                >> ${FILEHARDWARE}
     cat-file /proc/apm				${FILEHARDWARE}
     cat-file /proc/pmu/battery_0              ${FILEHARDWARE}
@@ -361,9 +362,9 @@ function hardware-update () {
 
     echo "IO Scheduler"                             >> ${FILEHARDWARE}
     for file in /sys/block/*/queue/* ; do
-	if [ -f $file -a -r $file ] ; then
-	    cat-file $file			${FILEHARDWARE}
-	fi
+       if [ -f $file -a -r $file ] ; then
+           cat-file $file                      ${FILEHARDWARE}
+       fi
     done
 
     > ${FILEHDPARM}
@@ -372,7 +373,7 @@ function hardware-update () {
 	${HDPARM} -i /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
 	${HDPARM} -I /dev/${disk} >> ${FILEHDPARM} 2> /dev/null
     done
-    
+
     if [ -x ${HPADUCLI} ] ; then
 	${HPADUCLI} -f ${DIARIO}/hpadu-report
     fi
@@ -398,7 +399,7 @@ function hpacucli-update () {
     echo -n "."
     cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller ch=\{\} show  >> ${FILEHPACUCLI}
     cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' ' | xargs -n 1 -i ${HPACUCLI} controller slot=\{\} show  >> ${FILEHPACUCLI}
-
+	    
 
     for target in `cat ${TMPDIR}/hpacucli-controller | grep " at " | cut -f 3 -d ' '` ; do
 	echo -n "."
@@ -410,10 +411,10 @@ function hpacucli-update () {
 
     for target in `cat ${TMPDIR}/hpacucli-controller | grep " in Slot " | cut -f 6 -d ' '` ; do
 	echo -n "."
- 	echo "Discs of controller in Slot $target" >> ${FILEHPACUCLI}
- 	${HPACUCLI} controller slot=${target} array all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-array >> ${FILEHPACUCLI}
- 	${HPACUCLI} controller slot=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-ld >> ${FILEHPACUCLI}
- 	${HPACUCLI} controller slot=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-pd >> ${FILEHPACUCLI}
+	echo "Discs of controller in Slot $target" >> ${FILEHPACUCLI}
+	${HPACUCLI} controller slot=${target} array all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-array >> ${FILEHPACUCLI}
+	${HPACUCLI} controller slot=${target} ld all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-ld >> ${FILEHPACUCLI}
+	${HPACUCLI} controller slot=${target} pd all show | tee ${TMPDIR}/hpacucli-controller-slot-${target}-pd >> ${FILEHPACUCLI}
     done
 
 
