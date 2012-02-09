@@ -17,7 +17,6 @@ function packages-list-update () {
 	    if [ -d "${DIARIO}" ] ; then
 		FILE="${DIARIO}/packages-list"
 		if [ -f "${FILE}" ] ; then
-		    echo "Criando ficheiro ${FILE}"
 		    COLUMNS=132 dpkg --list > "${FILE}"
 		fi
 	    fi
@@ -101,6 +100,13 @@ function hardware-update () {
     cat-file /proc/asound/pcm     ${FILEALSA}
 
     > ${FILEHARDWARE}
+    cat-file /proc/cpuinfo                ${FILEHARDWARE}
+    cat-file /proc/device-tree/compatible ${FILEHARDWARE}
+    echo >> ${FILEHARDWARE}
+    cat-file /proc/device-tree/model      ${FILEHARDWARE}
+    echo >> ${FILEHARDWARE}
+    cat-file /proc/device-tree/serial-number  ${FILEHARDWARE}
+    echo >> ${FILEHARDWARE}
     cat-file /proc/bus/input/devices     ${FILEHARDWARE}
     cat-file /proc/bus/usb/devices       ${FILEHARDWARE}
     cat-file /proc/ide/drivers           ${FILEHARDWARE}
