@@ -84,6 +84,7 @@ set-command CUT cut
 set-command LSUSB lsusb
 set-command HDPARM hdparm
 set-command SDPARM sdparm
+set-command SMARTCTL smartctl "For collecting S.M.A.R.T. information"
 set-command HPADUCLI hpaducli "For SCSI from HP/Compaq"
 set-command HPACUCLI hpacucli "For SCSI from HP/Compaq"
 set-command HPASMCLI hpasmcli "For Hardware from HP/Compaq"
@@ -657,6 +658,21 @@ function hdparm-update () {
     #set +x
 }
 
+function smart-update () {
+#     HDPARM=/sbin/hdparm
+    FILESMART=${DIARIO}/smart-list
+
+    #set -x
+    > ${FILESMART}
+    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
+	if test -r ${disk} ; then
+	    echo -n " " ${disk} " "
+ 	    echo_execute ${FILESMART} ${SMARTCTL} -a ${disk}
+	fi
+    done
+}
+
+
 function hp-hardware-update () {
 #     HPADUCLI=/usr/sbin/hpaducli
 #     HPASMCLI=/sbin/hpasmcli
@@ -1194,6 +1210,10 @@ function update-slow-diario () {
     hdparm-update
     echo
     echo -n "hdparm-update finished   " 
+    date
+    smart-update
+    echo
+    echo -n "smart-update finished   " 
     date
     hp-hardware-update
     echo
