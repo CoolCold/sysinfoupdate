@@ -7,7 +7,7 @@
 # License: GPL-2
 #
 BRANCH="git branch tagus"
-VERSION='v0.9.2 git branch tagus'
+VERSION='v0.9.3 git branch tagus'
 
 
 
@@ -1158,6 +1158,9 @@ function services-update () {
 	    | awk '{printf "%5s  %10s  %16s  %6s  %14s  %14s  %14s  %14s\n",$1,$2,$3,$4,$5,$6,$7,$8}' \
 	    >> ${FILESERVICES}
     fi
+    echo "Collect info about nsswitch" >> ${FILESERVICES}
+    cat-file /etc/nsswitch.conf           ${FILESERVICES}
+    cat-file /etc/defaultdomain           ${FILESERVICES}
 }
 
 function update-fast-diario () {
