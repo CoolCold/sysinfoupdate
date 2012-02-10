@@ -1,0 +1,2 @@
+
+don't collect the entries "." and ".." from the subdirectories of /proc and /sys
