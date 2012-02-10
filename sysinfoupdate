@@ -6,14 +6,14 @@
 #
 # License: GPL-2
 #
-# Version: git branch tagus
+# Version: git branch fstab
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION='v0.9.0 git branch tagus'
+VERSION='v0.9.1 git branch fstab'
 
 echo "$PROG" "$VERSION"
 
@@ -169,7 +169,6 @@ function partition-update () {
 #     CP=/bin/cp
 #     DF=/bin/df
     FILEPART=${DIARIO}/part-list
-    FILEFSTAB=${DIARIO}/fstab
     FILEFS=${DIARIO}/fs-list
 
     echo -n "."
@@ -211,6 +210,10 @@ function partition-update () {
     echo_execute ${FILEFS} ${DF} -h
     echo "inodes of filesystems df -iH" >> ${FILEFS}
     echo_execute ${FILEFS} ${DF} -iH
+}
+
+function fstab-update () {
+    FILEFSTAB=${DIARIO}/fstab
     
     ${CP} /etc/fstab ${FILEFSTAB}
 }
@@ -1164,6 +1167,9 @@ function update-fast-diario () {
     date
     echo -n "  md-update begin   "
     md-update
+    date
+    echo -n "  fstab-update begin   "
+    fstab-update
     date
     echo -n "  kernel-boot begin   "
     kernel-boot
