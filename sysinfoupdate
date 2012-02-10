@@ -1,19 +1,19 @@
 #!/bin/bash
 #
 # (c) 2005-2011 Instituto Superior Técnico
+# 
+# Author: Jose M Calhariz <jose.calhariz@ist.utl.pt>
 #
 # License: GPL-2
 #
-# $Date: 2011-12-17 23:43:53 +0000 (Sáb, 17 Dez 2011) $
-# $HeadURL: svn+ssh://svn.tagus.ist.utl.pt/home/svn/trunk/home/user/bin/sysinfoupdate $
-# $Revision: 5435 $ CIIST
+# Version: git branch tagus
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION=' $Revision: 5435 $ CIIST'
+VERSION='v0.9.0 git branch tagus'
 
 echo "$PROG" "$VERSION"
 
