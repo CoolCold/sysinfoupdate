@@ -6,14 +6,13 @@
 #
 # License: GPL-2
 #
-# Version: git branch fstab
+VERSION='v0.9.1 git branch tagus'
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION='v0.9.1 git branch fstab'
 
 echo "$PROG" "$VERSION"
 
