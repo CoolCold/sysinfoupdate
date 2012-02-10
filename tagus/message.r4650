@@ -1,0 +1,2 @@
+
+change partition-update for better debug of a rare problem in collecting the partition table from all the disks
