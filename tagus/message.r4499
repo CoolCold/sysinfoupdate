@@ -1,0 +1,2 @@
+
+change function to cat /etc/issue* and collect contects of /etc/debian_version

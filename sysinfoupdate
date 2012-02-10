@@ -6,14 +6,14 @@
 #
 # License: GPL-2
 #
-# Version: git branch master
+BRANCH="git branch master"
+VERSION='v0.9.3 git branch tagus'
 
 
 
 # Main vars for configuration
 DIARIO=${HOME}/diario/
 PROG=$0
-VERSION='v0.9.0 git branch master'
 
 echo "$PROG" "$VERSION"
 

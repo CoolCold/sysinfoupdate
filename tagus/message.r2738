@@ -1,0 +1,2 @@
+
+reorder the data collection, so if afs is blocked all the other information is collected before sysinfoupdate stalls
