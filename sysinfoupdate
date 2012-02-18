@@ -7,7 +7,7 @@
 # License: GPL-2
 #
 BRANCH="git branch master"
-VERSION='v0.9.3'
+VERSION='v0.9.4'
 
 
 
@@ -169,7 +169,6 @@ function partition-update () {
 #     CP=/bin/cp
 #     DF=/bin/df
     FILEPART=${DIARIO}/part-list
-    FILEFS=${DIARIO}/fs-list
 
     echo -n "."
     > ${FILEPART}
@@ -191,6 +190,10 @@ function partition-update () {
 	echo 
 	echo "${PARTED} not found, please check or install parted"
     fi
+}
+
+function fslist-update () {
+    FILEFS=${DIARIO}/fs-list
 
     echo -n "."
     > ${FILEFS}
@@ -1150,6 +1153,9 @@ function update-fast-diario () {
     date
     echo -n "  md-update begin   "
     md-update
+    date
+    echo -n "  fslist-update begin   "
+    fslist-update
     date
     echo -n "  fstab-update begin   "
     fstab-update
