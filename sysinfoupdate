@@ -647,9 +647,34 @@ function hdparm-update () {
 function smart-update () {
 #     HDPARM=/sbin/hdparm
     FILESMART=${DIARIO}/smart-list
+    CONFSMART=/etc/smartd.conf
 
-    #set -x
     > ${FILESMART}
+
+    egrep -v "^#" "$CONFSMART" | sed -e :a -e '$b;N;s/\\\n//;ba' | while read -a a ; do 
+        unset DEV
+        unset TYPE
+        for (( i = 0 ;  i < ${#a} ; i ++ )); do
+            # echo ${a[ $(( i )) ] }
+	    case ${a[ $(( i )) ] } in
+	        /dev/*)
+		    DEV="${a[ $(( i )) ] }"
+		    ;;
+	        -d)
+		    TYPE="${a[ $(( ++ i  )) ] }"
+		    ;;
+	        *)
+		    
+	    esac
+        done
+        if test $(( i )) -ge 1 ; then
+            echo "$DEV -d $TYPE"
+            echo_execute ${FILESMART} ${SMARTCTL} -a "$DEV" -d "$TYPE"
+            echo >> ${FILESMART}
+        fi
+    done
+    #set -x
+
     for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
@@ -1147,6 +1172,8 @@ function services-update () {
 }
 
 function update-fast-diario () {
+
+
     date
     echo -n "  lvm-update begin   "
     lvm-update
@@ -1166,6 +1193,10 @@ function update-fast-diario () {
     echo -n "  hardware begin   "
     hardware-update
     echo -n "  hardware finished  "
+    date
+    smart-update
+    echo
+    echo -n "smart-update finished   " 
     date
     packages-list-update 
     date
@@ -1205,10 +1236,6 @@ function update-slow-diario () {
     hdparm-update
     echo
     echo -n "hdparm-update finished   " 
-    date
-    smart-update
-    echo
-    echo -n "smart-update finished   " 
     date
     hp-hardware-update
     echo
