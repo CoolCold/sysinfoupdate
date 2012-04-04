@@ -7,7 +7,7 @@
 # License: GPL-2
 #
 BRANCH="git branch master"
-VERSION='v0.9.5'
+VERSION='v0.9.6'
 
 
 
