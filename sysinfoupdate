@@ -684,13 +684,25 @@ function smart-update () {
 }
 
 
+function hpaducli-update () {
+    if [ ! -x ${HPADUCLI} ] ; then
+        return 1
+    fi
+    VERSION=`${HPADUCLI} |& head -1 | cut -f 10 -d ' ' | cut -f 1 -d .`
+    
+    if [ 0$VERSION -eq 9 ] ; then
+        ${HPADUCLI} -f ${DIARIO}/hpadu-report -txt
+    else
+        ${HPADUCLI} -f ${DIARIO}/hpadu-report
+    fi
+}
+
 function hp-hardware-update () {
 #     HPADUCLI=/usr/sbin/hpaducli
 #     HPASMCLI=/sbin/hpasmcli
 
-    if [ -x ${HPADUCLI} ] ; then
-	${HPADUCLI} -f ${DIARIO}/hpadu-report
-    fi
+    hpaducli-update
+
     if [ -x ${HPASMCLI} ] ;then
 	${HPASMCLI} -s "SHOW ASR; SHOW BOOT; SHOW DIMM ; SHOW F1 ; SHOW FANS ; SHOW HT ; SHOW IML ; SHOW IPL ; SHOW NAME ; SHOW POWERSUPPLY ; SHOW PXE ; SHOW SERIAL  BIOS ;  SHOW SERIAL EMBEDDED ; SHOW SERIAL VIRTUAL ; SHOW SERVER ; SHOW TEMP ; ; SHOW WOL ;" > ${DIARIO}/hpasmcli-report < /dev/null
     fi
