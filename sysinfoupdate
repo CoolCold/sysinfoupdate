@@ -688,9 +688,8 @@ function hpaducli-update () {
     if [ ! -x ${HPADUCLI} ] ; then
         return 1
     fi
-    VERSION=`${HPADUCLI} |& head -1 | cut -f 10 -d ' ' | cut -f 1 -d .`
-    
-    if [ 0$VERSION -eq 9 ] ; then
+    local V=`${HPADUCLI} |& head -1 | cut -f 10 -d ' ' | cut -f 1 -d .`
+    if [ 0$V -eq 9 ] ; then
         ${HPADUCLI} -f ${DIARIO}/hpadu-report -txt
     else
         ${HPADUCLI} -f ${DIARIO}/hpadu-report
@@ -886,8 +885,8 @@ function hpacucli-update-generic () {
 	return
     fi
     
-    VERSION=`echo "exit" | ${HPACUCLI} | grep CLI | cut -d ' ' -f 6`
-    V=`echo $VERSION | cut -d - -f 1`
+    VER=`echo "exit" | ${HPACUCLI} | grep CLI | cut -d ' ' -f 6`
+    V=`echo $VER | cut -d - -f 1`
     V1=`echo $V | cut -d . -f 1`
     V2=`echo $V | cut -d . -f 2`
     V3=`echo $V | cut -d . -f 3`
@@ -935,8 +934,8 @@ function hpacucli-update () {
 	return
     fi
     
-    VERSION=`echo "exit" | ${HPACUCLI} | grep CLI | cut -d ' ' -f 6`
-    V=`echo $VERSION | cut -d - -f 1`
+    VER=`echo "exit" | ${HPACUCLI} | grep CLI | cut -d ' ' -f 6`
+    V=`echo $VER | cut -d - -f 1`
     V1=`echo $V | cut -d . -f 1`
     V2=`echo $V | cut -d . -f 2`
     V3=`echo $V | cut -d . -f 3`
