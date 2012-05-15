@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# (c) 2005-2011 Instituto Superior Técnico
+# (c) 2005-2012 Instituto Superior Técnico
 # 
 # Author: Jose M Calhariz <jose.calhariz@ist.utl.pt>
 #
 # License: GPL-2
 #
-BRANCH="git branch master"
-VERSION='v0.9.6'
+BRANCH="git branch xen_disks"
+VERSION='v0.9.7'
 
 
 
@@ -172,7 +172,7 @@ function partition-update () {
 
     echo -n "."
     > ${FILEPART}
-    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/xvd? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	echo -n "${disk} "
 	if test -r ${disk} ; then
 	echo -n "${disk} "
@@ -621,7 +621,7 @@ function hdparm-update () {
 
     #set -x
     > ${FILEHDPARM}
-    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/xvd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
  	    echo_execute ${FILEHDPARM} ${HDPARM}    ${disk}
@@ -633,7 +633,7 @@ function hdparm-update () {
     done
 
     > ${FILESDPARM}
-    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
+    for disk in /dev/hd? /dev/sd? /dev/vd? /dev/xvd? /dev/sr? /dev/cciss/c?d? /dev/cciss/c?d?? /dev/cciss/disc?/disc ; do
 	if test -r ${disk} ; then
 	    echo -n " " ${disk} " "
  	    echo_execute ${FILESDPARM} ${SDPARM} --all                  ${disk}
