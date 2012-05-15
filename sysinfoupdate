@@ -6,8 +6,8 @@
 #
 # License: GPL-2
 #
-BRANCH="git branch xen_disks"
-VERSION='v0.9.7'
+BRANCH="git branch awk"
+VERSION='v0.9.8'
 
 
 
@@ -1070,7 +1070,7 @@ function net-update () {
         # Updated for atena on 20070326 on etch
 	# Updated for afs06-unstable on 20070328 on etch
 	${IP} -6 route \
-	    | gawk '\
+	    | awk '\
 /^[0-9a-fA-F\/:]+ dev [.[:alnum:]]+  proto kernel  metric.*/ \
     { print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7" " $8 " XXXX " $10 " " $11 " " $12 " " $13 " " $14 " " $15 " " $16 } \
 /^[0-9a-fA-F\/:]+ dev [.[:alnum:]]+  metric/ \
