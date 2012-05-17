@@ -6,8 +6,8 @@
 #
 # License: GPL-2
 #
-BRANCH="git branch xen_disks"
-VERSION='v0.9.7'
+BRANCH="git branch master"
+VERSION='v0.9.10'
 
 
 
