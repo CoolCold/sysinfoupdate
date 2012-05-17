@@ -7,7 +7,7 @@
 # License: GPL-2
 #
 BRANCH="git branch master"
-VERSION='v0.9.11'
+VERSION='v0.9.12'
 
 
 
@@ -190,6 +190,7 @@ function partition-update () {
 	echo 
 	echo "${PARTED} not found, please check or install parted"
     fi
+    cat-file /proc/partitions ${FILEPART}
 }
 
 function fslist-update () {
