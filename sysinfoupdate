@@ -264,6 +264,36 @@ function md-update () {
     cat-file /proc/mdstat      ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_max ${FILEMD}
     cat-file /proc/sys/dev/raid/speed_limit_min ${FILEMD}
+
+    echo "Get slot positions of the devices in mdraid" >> ${FILEMD}
+    for file in /sys/block/md* ; do
+        echo $file    >> ${FILEMD}
+        for dev in $file/md/rd* ; do
+            echo $dev    >> ${FILEMD}
+            ls -alF $dev >> ${FILEMD}
+        done
+        echo >> ${FILEMD}
+    done
+
+    echo "Get more info about devices in mdraid" >> ${FILEMD}
+    # get info about all devices that are in a mdraid.
+    # similar to mdadm --examine ?
+    for file in /sys/block/md* ; do
+        echo $file    >> ${FILEMD}
+        for dev in $file/md/rd* ; do
+            echo $dev    >> ${FILEMD}
+            ls -alF $dev >> ${FILEMD}
+            for fi in $dev/* ; do
+                if test `basename $fi` = "block"; then
+                    ls -alF $fi >> ${FILEMD}
+                else
+                    cat-file $fi ${FILEMD}
+                fi
+            done
+            echo >> ${FILEMD}
+        done
+        echo >> ${FILEMD}
+    done
 }
 
 function kernel-update () {
