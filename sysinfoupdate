@@ -7,7 +7,7 @@
 # License: GPL-2
 #
 BRANCH="git branch master"
-VERSION='v0.9.12'
+VERSION='v0.9.13'
 
 
 
@@ -15,7 +15,7 @@ VERSION='v0.9.12'
 DIARIO=${HOME}/diario/
 PROG=$0
 
-echo "$PROG" "$VERSION"
+echo "$PROG" "$VERSION" "$BRANCH"
 
 # Define VARS to call commands
 WHICH=`which which`
@@ -140,7 +140,7 @@ function packages-list-update () {
     if [ -d "${DIARIO}" ] ; then
 	echo -n "."
 	> "${FILE}"
-	echo "$PROG" "$VERSION"           >> "${FILE}"
+	echo "$PROG" "$VERSION" "$BRANCH" >> "${FILE}"
 
 	echo                              >> "${FILE}"
 	cat-file /etc/debian_version "${FILE}"
